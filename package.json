@@ -18,6 +18,8 @@
     "fp-ts": "^2.11.5"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "test:samples": "jest --testPathIgnorePatterns=todo",
+    "test:todo": "jest todo"
   }
 }
