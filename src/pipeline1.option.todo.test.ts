@@ -40,6 +40,7 @@ const handleCommand = (cmd: IncreaseCommand): Option<CommandResult> => {
   O.none;
 }
 
+// request ->  toCommand -> handleCommand
 const executeRequest = (request: RequestIn): Option<CommandResult> => {
   throw 'todo';
 }
