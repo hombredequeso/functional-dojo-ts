@@ -51,6 +51,7 @@ describe('with config', () => {
 import { Reader} from 'fp-ts/lib/Reader';
 import * as R from 'fp-ts/lib/Reader';
 import { pipe } from 'fp-ts/lib/function'
+import { reader } from 'fp-ts'
 
 const getIdR = (s: string): Reader<Config, number> =>
   (r: Config) =>
@@ -144,3 +145,22 @@ describe('reader and map/chain', () => {
     expect(executedResultValue).toEqual('hello')
   })
 })
+
+// So what would reader map/chain look like??
+// Reader.map(f: Tin => TOut)(a: Reader<TConfig, TIn>) : Reader<TConfig, TOut> => {
+//     (config: TConfig)  => {
+          // const aa = a(config);
+          // const b = f(aa);
+          // return b;
+// }
+// }
+
+// And chain??
+// reader.chain(f: Tin => Reader<TConfig, TOut>)(a: Reader<TConfig, TIn>): Reader<TConfig, TOut> => {
+//   (config: TConfig ) => {
+//     const aa: TIn = a(config);
+//     const b: Reader<TConfig, TOut> = f(aa);
+//     const bb: TOut = b(config);
+//     return bb;
+//   }
+// }

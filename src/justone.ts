@@ -18,5 +18,4 @@ export class JustOne<T> {
     const newValue: JustOne<T2> = f(this.value);
     return newValue;
   }
-
 }
