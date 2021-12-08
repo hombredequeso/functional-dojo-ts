@@ -13,6 +13,7 @@ import { ReaderTaskEither } from 'fp-ts/lib/ReaderTaskEither';
 import * as RTE from 'fp-ts/lib/ReaderTaskEither';
 import { boolean } from 'fp-ts';
 import { pipe } from 'fp-ts/lib/function';
+import { fromCompare } from 'fp-ts/lib/Ord';
 
 interface RequestIn {
   id: number
@@ -44,14 +45,46 @@ class ParseError {
   static readonly __type: string = "ParseError"
 }
 
-
 const parseNumber = (s: string): Either<ParseError, number> => {
   const parseResult = parseInt(s);
-  const validNumber: boolean = !isNaN(parseResult);
+  const validNumber: boolean = !isNaN(parseResult) && (parseResult.toString() == s);
   return validNumber?
     E.right(parseResult) :
     E.left(new ParseError(`parseNumber error: ${s} is not a number`));
 }
+
+import * as fc from 'fast-check';
+
+const isDigit = (c: string) => (c >= '0' && c <= '9');
+const onlyDigits = (s: string) => s.split('').filter(x => !isDigit(x)).length == 0
+
+
+describe('parseNumber', () => {
+  test('succeeds with integers', () => {
+    const arbInteger = fc.integer()
+
+    fc.assert(
+      fc.property(arbInteger,
+        (integer: number) => {
+          return E.isRight(parseNumber(integer.toString()));
+        }
+      ),
+      { verbose: true }
+    )
+  })
+
+  test('fails when string has a least 1 non-digit', () => {
+    const arbStringWithNonDigits = fc.string().filter(s => !onlyDigits(s));
+    fc.assert(
+      fc.property(arbStringWithNonDigits,
+        (s: string) => {
+          return E.isLeft(parseNumber(s));
+        }
+      ),
+      { verbose: true }
+    )
+  })
+})
 
 type ToCommandError = ParseError
 
@@ -156,5 +189,29 @@ describe('readertaskeither', () => {
 
     expect(executedResult).toEqual(E.left(expectedResult));
   })
+
+
+  test('executeRequest failure 2', async () => {
+
+    const request: RequestIn = {
+      id: 123,
+      input: '56Invalid'
+    }
+
+    // Construct the 'functional program'
+    const commandResult: ReaderTaskEither<Config, ExecutionError, RequestResponse> = executeRequest(request);
+
+
+    // Execute 'the program'
+    const config: Config = {
+      apiUrl: "http://whatevs.com"
+    }
+    const executedResult: Either<ExecutionError, RequestResponse> = await commandResult(config)();
+
+    const expectedResult: ExecutionError = new ParseError("parseNumber error: 56Invalid is not a number");
+
+    expect(executedResult).toEqual(E.left(expectedResult));
+  })
+
 
 })
