@@ -57,7 +57,7 @@ describe('map using functional format', () => {
     expect(result).toEqual([2,3,4]);
   })
 
-  test('task map - task is like Promise, done consistently functionally', async () => {
+  test('task map - task is like Promise, but done consistently functionally and strongly typed', async () => {
     const a: Task<number> = T.of(1);
     const numToString = (x: number): string => x.toString();
 
@@ -80,7 +80,8 @@ describe('map using functional format', () => {
   })
 
   // The trick here, is to think that the 'wrapper' is all of Either<string,
-  // In other words, the parallel with earlier data structures is like:
+  // In other words, the parallel with earlier data structures is that
+  // in all the following, there is a wrapper with element(s) of T in it.
   // Array<T>, Task<T>, Option<T>, Either<Error, T> 
   // So don't think of the Error as anything more than part of the wrapper
   test('Either map', () => {

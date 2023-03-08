@@ -19,6 +19,7 @@
     "fp-ts": "^2.11.5"
   },
   "scripts": {
+    "clean": "rm -rf node_modules",
     "test": "jest",
     "test:samples": "jest --testPathIgnorePatterns=todo",
     "test:todo": "jest todo"

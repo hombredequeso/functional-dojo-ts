@@ -31,7 +31,7 @@ type Error = string
 
 const parseNumber = (s: string): Either<Error, number> => {
   const parseResult = parseInt(s);
-  return (parseResult != NaN)? E.right(parseResult) : E.left(`parseNumber error: ${s} is not a number`);
+  return (!Number.isNaN(parseResult))? E.right(parseResult) : E.left(`parseNumber error: ${s} is not a number`);
 }
 
 

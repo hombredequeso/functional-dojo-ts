@@ -18,7 +18,7 @@ interface CommandResult {
 
 const parseNumber = (s: string) => {
   const parseResult = parseInt(s);
-  return (parseResult != NaN)? O.some(parseResult) : O.none;
+  return (!Number.isNaN(parseResult))? O.some(parseResult) : O.none;
 }
 
 const toCommand = (request: RequestIn): Option<IncreaseCommand> => {

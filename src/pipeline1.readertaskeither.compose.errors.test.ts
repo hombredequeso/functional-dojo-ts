@@ -47,7 +47,7 @@ class ParseError {
 
 const parseNumber = (s: string): Either<ParseError, number> => {
   const parseResult = parseInt(s);
-  const validNumber: boolean = !isNaN(parseResult) && (parseResult.toString() == s);
+  const validNumber: boolean = !Number.isNaN(parseResult) && (parseResult.toString() == s);
   return validNumber?
     E.right(parseResult) :
     E.left(new ParseError(`parseNumber error: ${s} is not a number`));
