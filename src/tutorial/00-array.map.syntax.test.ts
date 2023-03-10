@@ -27,8 +27,13 @@ describe('typescript array and syntactic sugar', () => {
     const add1 = (x: number) => x + 1;
     // read this as:
     // take the array 'a', and feed it into A.map(add1)
+
     const a: number[] = [1, 2, 3];
-    const result: number[] = pipe(a, A.map(add1));
+
+    const result: number[] = pipe(
+      a, 
+      A.map(add1)
+    );
     expect(result).toStrictEqual([2, 3, 4]);
   });
 
@@ -42,8 +47,15 @@ describe('typescript array and syntactic sugar', () => {
     // take the array 'a',
     // and feed it into A.map(add1),
     // then take the result of that, and feed it into A.map(turnIntoCustomerId)
+
     const a: number[] = [1, 2, 3];
-    const result: string[] = pipe(a, A.map(add1), A.map(turnIntoCustomerId));
+
+    const result: string[] = pipe(
+      a, 
+      A.map(add1), 
+      A.map(turnIntoCustomerId)
+    );
+
     expect(result).toStrictEqual(['customer:2', 'customer:3', 'customer:4']);
   });
 
