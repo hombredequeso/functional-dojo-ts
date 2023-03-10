@@ -10,103 +10,59 @@ describe('typescript array and syntactic sugar', () => {
 
     const newInts = ints.map(add1);
 
-    expect(newInts).toEqual([2, 3, 4]);
+    expect(newInts).toStrictEqual([2, 3, 4]);
   });
 
   test('map using fp-ts', () => {
     const a: number[] = [1, 2, 3];
     const add1 = (x: number) => x + 1;
     const result: number[] = A.map(add1)(a);
-    expect(result).toEqual([2, 3, 4]);
+    expect(result).toStrictEqual([2, 3, 4]);
   });
 
   // You might have wondered why not at least do this: A.map(add1, a)
   // Well, he is one reason why:
 
   test('map using fp-ts and pipe', () => {
+    const add1 = (x: number) => x + 1;
+    // read this as:
+    // take the array 'a', and feed it into A.map(add1)
     const a: number[] = [1, 2, 3];
-    const add1 = (x: number) => x + 1;
-    const result: number[] = pipe(a, add1);
-    expect(result).toEqual([2, 3, 4]);
+    const result: number[] = pipe(a, A.map(add1));
+    expect(result).toStrictEqual([2, 3, 4]);
   });
 
-  test('promise then is pretend "map"', async () => {
-    const intP: Promise<number> = Promise.resolve(1);
+  // To understand where that leads to,
+  // imagine we then want to do something with it after adding 1.
+
+  test('map using fp-ts and pipe with more maps', () => {
     const add1 = (x: number) => x + 1;
-
-    const newIntP: Promise<number> = intP.then(add1);
-
-    expect(await newIntP).toEqual(2);
+    const turnIntoCustomerId = (x: number) => `customer:${x}`;
+    // read this as:
+    // take the array 'a',
+    // and feed it into A.map(add1),
+    // then take the result of that, and feed it into A.map(turnIntoCustomerId)
+    const a: number[] = [1, 2, 3];
+    const result: string[] = pipe(a, A.map(add1), A.map(turnIntoCustomerId));
+    expect(result).toStrictEqual(['customer:2', 'customer:3', 'customer:4']);
   });
 
-  test('justone', () => {
-    const oneInt: JustOne<number> = new JustOne<number>(1);
+  // This is exactly the same as this:
+
+  test('map using fp-ts without pipes', () => {
     const add1 = (x: number) => x + 1;
+    const turnIntoCustomerId = (x: number) => `customer:${x}`;
 
-    const newOneInt = oneInt.map(add1);
-
-    expect(newOneInt).toEqual(new JustOne<number>(2));
+    const a: number[] = [1, 2, 3];
+    const aWith1Added = A.map(add1)(a);
+    const result = A.map(turnIntoCustomerId)(aWith1Added);
+    expect(result).toStrictEqual(['customer:2', 'customer:3', 'customer:4']);
   });
 });
 
-describe('map using functional format', () => {
-  test('array', () => {
-    const a: number[] = [1, 2, 3];
-    const add1 = (x: number) => x + 1;
-    const result: number[] = A.map(add1)(a);
-
-    expect(result).toEqual([2, 3, 4]);
-  });
-
-  test('task map - task is like Promise, but done consistently functionally and strongly typed', async () => {
-    const a: Task<number> = T.of(1);
-    const numToString = (x: number): string => x.toString();
-
-    const result: Task<string> = T.map(numToString)(a);
-
-    const executedResult: string = await result();
-
-    expect(executedResult).toEqual('1');
-  });
-
-  test('Option map - option is like an array, but with only 1 or 0 elements allowed', () => {
-    const a: Option<number> = O.some(1);
-    const numToString = (x: number): string => x.toString();
-    const result: Option<string> = O.map(numToString)(a);
-    expect(result).toEqual(O.some('1'));
-
-    const b: Option<number> = O.none;
-    const resultb: Option<string> = O.map(numToString)(b);
-    expect(resultb).toEqual(O.none);
-  });
-
-  // The trick here, is to think that the 'wrapper' is all of Either<string,
-  // In other words, the parallel with earlier data structures is that
-  // in all the following, there is a wrapper with element(s) of T in it.
-  // Array<T>, Task<T>, Option<T>, Either<Error, T>
-  // So don't think of the Error as anything more than part of the wrapper
-  test('Either map', () => {
-    const a: Either<string, number> = E.right(1);
-    const numToString = (x: number): string => x.toString();
-    const result: Either<string, string> = E.map(numToString)(a);
-    expect(result).toEqual(E.right('1'));
-
-    const b: Either<string, number> = E.left('ERROR');
-    const resultb: Either<string, string> = E.map(numToString)(b);
-    expect(resultb).toEqual(E.left('ERROR'));
-  });
-
-  interface Config {
-    context: string;
-  }
-
-  // Here, the wrapper is not a data structure - it is a function.
-  test('Reader map', () => {
-    const a: Reader<Config, number> = (config: Config) => 1;
-    const numToString = (x: number): string => x.toString();
-    const result: Reader<Config, string> = R.map(numToString)(a);
-
-    const executedResult: string = result({ context: 'prod' });
-    expect(executedResult).toEqual('1');
-  });
-});
+// Why precisely this notation?
+// So you may not like the notation, or wonder why move away from myArray.map(...).map(...)
+// The main reasons are:
+//  * curried functions open up options that you don't have with non-curried functions.
+//      non-curried function: map(f, a), curried function: map(f)(a)
+//  * limitations in the Typescript type detection.
