@@ -30,9 +30,10 @@ describe('typescript array and syntactic sugar', () => {
 
     const a: number[] = [1, 2, 3];
 
+    // Try and understand what's happening when you hover over 'a' in the pipe, and 'map'.
     const result: number[] = pipe(
-      a, 
-      A.map(add1)
+      a,                                // result of this line is: number[]
+      A.map(add1)                       // result of this line is: string[]
     );
     expect(result).toStrictEqual([2, 3, 4]);
   });
@@ -51,9 +52,9 @@ describe('typescript array and syntactic sugar', () => {
     const a: number[] = [1, 2, 3];
 
     const result: string[] = pipe(
-      a, 
-      A.map(add1), 
-      A.map(turnIntoCustomerId)
+      a,                            // number[] 
+      A.map(add1),                  // number[], with 1 added to every element.
+      A.map(turnIntoCustomerId)     // string[], with 'customer:' prefixed to every number.
     );
 
     expect(result).toStrictEqual(['customer:2', 'customer:3', 'customer:4']);
