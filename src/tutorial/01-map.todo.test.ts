@@ -10,6 +10,9 @@ import * as O from 'fp-ts/lib/Option';
 import { Either } from 'fp-ts/lib/Either';
 import * as E from 'fp-ts/lib/Either';
 
+import {TaskOption} from 'fp-ts/lib/TaskOption'
+import * as TO from 'fp-ts/lib/TaskOption'
+
 import { pipe, flow } from 'fp-ts/lib/function';
 
 const todo: any = (s: string) => {
@@ -197,5 +200,69 @@ describe('map exercises', () => {
     )
 
     expect(result2).toEqual(E.right('$123.00'))
+  })
+
+
+  interface UserData {
+    id: number,
+    name: string,
+    age: string
+  }
+  
+  // In a real program this might be a call to an api or a Database
+  const getUserData = (id: number): Task<UserData> => T.of<UserData>({
+    id,
+    name: "SomeName",
+    age: '21'
+  });
+
+  const toPrintableUser = (user: UserData): string => 
+    `User: id=${user.id}; name=${user.name}`;
+
+  // There's a few things to note here:
+  test('12. Task', async () => {
+    const userId = 123;
+
+    const printableUserT: Task<string> = pipe(
+      todo('#12')
+    );
+
+    // Technically, printableUserT is the end of the purely functional
+    // part of the program. Once a Task is executed, you are no longer
+    // in the 'pure functional domain'.
+    // Consequently, there will never be any async awaits within a
+    // purely functional program.
+
+    // And now our 'program' (printableUserT) is built up,
+    // we finally execute it:
+    const executionResult = await printableUserT();
+
+    expect(executionResult).toEqual('User: id=123; name=SomeName')
+  // One consequence to this is that invocation of Tasks/Promises sits
+  // at the boundaries of a programs.
+  })
+
+  const printAge = (age: number): string => `Age: ${age}`
+
+
+  // For this test, a 'double context' is involved.
+  // At some point, you should end up with an Option inside a Task.
+  // fp-ts provides functions for some combinations of 'double wrapped contexts',
+  // and Task<Option<T>> is one of them. Effectively:
+  // Task<Option<T> is just a type alias for TaskOption<T>
+  test('13. Task<Option', async () => {
+    const userId = 123;
+
+    // starting with the userId, get the user data, then their age,
+    // then use the parsing function above (toNumber) to determine if
+    // the age is just a number.
+    // If it is a number, then use printAge to get the age in a displayable form.
+    const printableUserAge: Task<Option<string>> = pipe(
+      todo('#13')
+    );
+
+    const executionResult: Option<string> = await printableUserAge();
+
+    expect(executionResult).toEqual(O.some('Age: 21'));
   })
 })
