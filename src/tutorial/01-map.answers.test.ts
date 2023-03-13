@@ -17,7 +17,7 @@ const todo: any = () => {
 }
 
 describe('map exercises', () => {
-  test('length of names of important animals, however you like', () => {
+  test('1. length of names of important animals, however you like', () => {
     const customerNames = ['Duke', 'Bernie', 'Micky' ];
 
     // Implement this function however you like, but including A.map somewhere
@@ -44,7 +44,7 @@ describe('map exercises', () => {
   const numToString = (n: number): string => n.toString();
   const getLength = (s: string): number => s.length;
 
-  test('digit count of numbers in an array - anyway', () => {
+  test('2. digit count of numbers in an array - anyway', () => {
     const numbers = [1, 2, 3, 5, 7, 11, 13, 101];
 
     // However you like, get this test to pass:
@@ -54,7 +54,7 @@ describe('map exercises', () => {
     expect(stringLengths).toEqual([1,1,1,1,1,2,2,3]);
   })
 
-  test('digit count of numbers in an array - pipe with two A.map', () => {
+  test('3. digit count of numbers in an array - pipe with two A.map', () => {
     const numbers = [1, 2, 3, 5, 7, 11, 13, 101];
 
     // Pipe numbers and the two functions together:
@@ -68,7 +68,7 @@ describe('map exercises', () => {
   })
 
 
-  test('digit count of numbers in an array - composed function and one A.map', () => {
+  test('4. digit count of numbers in an array - composed function and one A.map', () => {
     const numbers = [1, 2, 3, 5, 7, 11, 13, 101];
 
     // Compose the two functions together, to produce a new function.
@@ -84,7 +84,7 @@ describe('map exercises', () => {
     expect(result).toEqual([1,1,1,1,1,2,2,3]);
   })
 
-  test('digit count of numbers in an array - compose function using "flow" and one A.map', () => {
+  test('5. digit count of numbers in an array - compose function using "flow" and one A.map', () => {
     const numbers = [1, 2, 3, 5, 7, 11, 13, 101];
 
     // fp-ts 'flow' is similar to pipe in some ways.
@@ -120,7 +120,7 @@ describe('map exercises', () => {
   }
 
 
-  test('Write the toNumber parsing function', () => {
+  test('6. Write the toNumber parsing function', () => {
 
     expect(toNumber('123')).toEqual(O.some(123));
     expect(toNumber('abc123')).toEqual(O.none);
@@ -130,7 +130,7 @@ describe('map exercises', () => {
 
   const toPrintableDollars = (n: number): string => (`$${n}.00`)
 
-  test('Optionally, show me the money #1', () => {
+  test('7. Optionally, show me the money #1', () => {
     const s1 = 'abc';
     const s2 = '123';
 
@@ -152,7 +152,7 @@ describe('map exercises', () => {
   })
 
 
-  test('Optionally, show me the money #2', () => {
+  test('8. Optionally, show me the money #2', () => {
     const s1 = 'abc';
     const s2 = '123';
 
@@ -183,12 +183,12 @@ describe('map exercises', () => {
     return E.fromOption(()=> `Invalid input: ${s} is not a number`)(numberO)
   }
 
-  test('Use the toNumber function to create a new function returning Either as opposed to Option', () => {
+  test('9. Use the toNumber function to create a new function returning Either as opposed to Option', () => {
     expect(toNumberE('123')).toEqual(E.right(123))
     expect(toNumberE('abc123')).toEqual(E.left('Invalid input: abc123 is not a number'));
   })
 
-  test('Either, show me the money or not #1', () => {
+  test('10. Either, show me the money or not #1', () => {
     const s1 = 'abc';
     const s2 = '123';
 
@@ -210,7 +210,7 @@ describe('map exercises', () => {
   })
 
 
-  test('Either, show me the money or not #2', () => {
+  test('11. Either, show me the money or not #2', () => {
     const s1 = 'abc';
     const s2 = '123';
 
