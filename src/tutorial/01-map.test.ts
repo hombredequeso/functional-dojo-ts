@@ -10,6 +10,10 @@ import * as T from 'fp-ts/lib/Task';
 import { Option } from 'fp-ts/lib/Option';
 import * as O from 'fp-ts/lib/Option';
 
+
+import { IO } from 'fp-ts/lib/IO';
+import * as Io from 'fp-ts/lib/IO';
+
 import * as S from 'fp-ts/lib/Set';
 
 import { Either } from 'fp-ts/lib/Either';
@@ -107,7 +111,7 @@ describe('map with fp-ts', () => {
     const a = Tr.make(1, [two, three]);
     const b = Tr.map(numToString)(a);
 
-    // Can't do this!!!!
+    // Can't do this!!!! (drawTree requires Tree<string> )
     // console.log(Tr.drawTree(a));
 
     // so...
@@ -168,9 +172,45 @@ describe('map with fp-ts', () => {
 
   // But wait, there's even more...
 
+
+  type UnixTime = number;
+
+  test('IO map', () => {
+    const now = Math.floor(Date.now() / 1000);
+
+    // What is an 'IO'? 
+    // A couple of analogies for what an IO is are:
+    // * very similar to a Task<T>. For this exercise, you could mentally subsitute IO<> with Task<>
+    // * A function. IO<T> is a function that gives you a T value. The function gets executed right at the end.
+    //   So in this exercise IO<UnitTime> is a function, that when executed gives us a UnixTime. Only thing is,
+    //   we don't want to preserve the IO<> context until the very end, so to get access to the UnixTime we have to map it
+    //   to get at the value inside the IO<> context.
+    const nowIO: IO<UnixTime> = Io.of(now);
+    const numToString = (x: number): string => x.toString();
+
+    const result: IO<string> = Io.map(numToString)(nowIO);
+
+    // Since IO is a function that can give us a string,
+    // it is necessary to execute the IO/function to finally
+    // get the string (which was previously wrapper up in the IO<>)
+    const executedResult: string = result();
+
+    expect(executedResult).toEqual(now.toString());
+  })
+
+  // So where does that get us?
+  // Since IO is a function, and we were able to map over it,
+  // that also means that we can add 'function' to the structures/contexts/wrappers
+  // that we can map over.
+  // As for why you would want to do this, that can wait for now.
+  // The point is, this concept of being able to map over something
+  // also applies to functions, as it does to Tasks, and lots of data structures.
+
   interface Config {
     context: string
   }
+
+  // Another example of a type of function that can be mapped over.
 
   test('Reader map', () => {
     const a: Reader<Config, number> = (config: Config) => 1;
@@ -186,7 +226,7 @@ describe('map with fp-ts', () => {
   //  Reader<Config, is in fact ... a function.
   // You can see that, because it had to be executed, by invoking the function:
   //  result({context: 'prod'})
-  // So that means, you can map over a function.
+  // So that means, as with IO, you can map over a function.
 
   // So where'd we get to?
   // the operation of map is something that can be done to:
@@ -194,10 +234,9 @@ describe('map with fp-ts', () => {
   //    * wrappers/contexts that promise you a value at some point in the future.
   //    * functions.
 
-  // If you can say this and understand it, you've got it:
+  // If you can say this, relate it to the examples and understand it, you've probably got it:
   //
   //    map is an structure/wrapper/context preserving operation, that transforms
   //      the values of the structure/wrapper/context
-  //      by producing a new structure/wrapper/context that is same, with transformed values 
-  //      (that's because we need immutability).
+  //      by producing a new value(s) inside the same structure/wrapper/context
 })
