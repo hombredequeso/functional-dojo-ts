@@ -1,7 +1,4 @@
 
-import { Tree } from 'fp-ts/lib/Tree';
-import * as Tr from 'fp-ts/lib/Tree';
-
 import * as A from 'fp-ts/lib/Array'
 import { Task } from 'fp-ts/lib/Task';
 import * as T from 'fp-ts/lib/Task';
@@ -13,22 +10,16 @@ import * as O from 'fp-ts/lib/Option';
 import { IO } from 'fp-ts/lib/IO';
 import * as Io from 'fp-ts/lib/IO';
 
-import * as S from 'fp-ts/lib/Set';
 
 import { Either } from 'fp-ts/lib/Either';
 import * as E from 'fp-ts/lib/Either';
 
-import { string } from 'fp-ts';
-import { Reader } from 'fp-ts/lib/Reader';
-import * as R from 'fp-ts/lib/Reader';
-
-import * as N from 'fp-ts/lib/number'
-import * as Str from 'fp-ts/lib/string'
 
 import { pipe } from 'fp-ts/lib/function';
 
 const getWordLengths = (s: string): number[] => (s.split(' ').map(word => word.length));
 
+// Let's say we want to calculate the lengths of words in song names:
 describe('map vs flatmap', () => {
   test('array map', () => {
     const a: string[] = ['A Day in the Life', 'The Great Gig in the Sky', 'Where the Streets Have no Name'];
@@ -36,6 +27,9 @@ describe('map vs flatmap', () => {
     const result = a.map(getWordLengths);
     // const result = A.map(getWordLengths)(a);
 
+    // with map, the result is an annoying array of arrays.
+    // Probably we were hoping for something more like: 
+    // [1,3,2,3,4, 3,5,3,2,3,3,5,3,7,4,2,4]
     expect(result).toEqual(
       [
         [1,3,2,3,4], 
@@ -45,6 +39,7 @@ describe('map vs flatmap', () => {
     );
   })
 
+  // Flatmap to the rescue!
   test('array flatmap', () => {
     const a: string[] = ['A Day in the Life', 'The Great Gig in the Sky', 'Where the Streets Have no Name'];
 
@@ -82,6 +77,15 @@ describe('fp-ts chain (flatmap/bind)', () => {
     expect(result).toEqual([1, 3, 2, 3, 4, 3, 5, 3, 2, 3, 3, 5, 3, 7, 4, 2, 4]);
   });
 
+  // Things to note:
+  // * the function getting mapped has the form: a => T[b] (e.g. getWordLengths is: string => number[])
+  // * so the function getting mapped results in a structure/wrapper/context that is the same as the one we are already in.
+  // * so what is flatmap doing? It maps the value, but it 'knows' something about managing the structure/wrapper/context
+  //    that the value comes back in, and can 'undo' a double structure/wrapper/context.
+
+  // So, as for map, let's now look at other structure/wrapper/contexts, and see if the concept of flatMapping (chain) applies...
+
+  // Hello Option:
   const toNumber = (s: string): Option<number> => {
     const parseResult = parseInt(s);
     const validNumber: boolean = !Number.isNaN(parseResult) && parseResult.toString() == s;
@@ -102,12 +106,29 @@ describe('fp-ts chain (flatmap/bind)', () => {
     const parsedA: Option<number> = toNumber(a);
 
     const customerIdOptionOption: Option<Option<string>> = O.map(toCustomerId)(parsedA);
+    // Oh ugly double wrapper...
     expect(customerIdOptionOption).toEqual(O.some(O.some('customer:1234')));
 
     const customerIdO: Option<string> = O.chain(toCustomerId)(parsedA);
+    // vs. thing of beauty:
     expect(customerIdO).toEqual(O.some('customer:1234'));
 
-    const customerIdOv2: Option<string> = pipe(a, toNumber, O.chain(toCustomerId));
+    // Compare the structure.
+    // Map gave us:
+    // O.map(a => Option<b>)(Option<a>) => Option<Option<b>>
+
+    // Chain (flatmap) gave us:
+    // O.chain(a => Option<b>)(Option<a>) => Option<b>
+
+    // and compare to arrays (and think again as if Option were a 0-1 element array)
+    // O.map(a => Array<b>)(Array<a>) => Array<Array<b>>
+    // O.chain(a => Array<b>)(Array<a>) => Array<b>
+
+    // Put it all together:
+    const customerIdOv2: Option<string> = pipe(
+      a, 
+      toNumber, 
+      O.chain(toCustomerId));
 
     expect(customerIdOv2).toEqual(O.some('customer:1234'));
   });
@@ -122,7 +143,8 @@ describe('fp-ts chain (flatmap/bind)', () => {
   ]);
 
   type CustomerId = string;
-  const getCustomer = (customerId: CustomerId): Option<Customer> => O.fromNullable(customers.get(customerId));
+  const getCustomer = (customerId: CustomerId): Option<Customer> => 
+    O.fromNullable(customers.get(customerId));
 
   test('option chain 2', () => {
     const customerId1Str = '8765';
@@ -147,6 +169,7 @@ describe('fp-ts chain (flatmap/bind)', () => {
     expect(customer2Option).toEqual(O.none);
 
     // Now there are 2 chains in a row, think about what is happening when toNumber returns none...
+    // (again, if you are stumped, imagine that Option<> is just a 0-1 element array, and O.none means there are 0 elements in it)
 
     const customer3Option: Option<Customer> = pipe(
       'Not a number',
@@ -265,5 +288,43 @@ describe('fp-ts chain (flatmap/bind)', () => {
       E.chain(toCustomerIdE)
     )
     expect(customerId3E).toEqual(E.left('Not a number'))
+  })
+})
+
+
+describe('Tasks (fp-ts) vs Promises (javascript)', () => {
+
+  // Finally, a little aside on the relationship between Task (in fp-ts) and Promise (in JavaScript)
+  // Ignore if it hurts your brain.
+  const add1P = (n: number): Promise<number> => new Promise((resolve, reject) => {
+    resolve(n + 1);
+  });
+
+  test('Javascript promises', async () => {
+    const initialValue = 0;
+
+    const result: Promise<number> = add1P(1);
+    const resultExecuted: number = await result;
+
+    expect(resultExecuted).toEqual(2)
+
+    const result2 = add1P(1).then(x => x + 1);    // lambda that is number => number
+    const result2Executed: number = await result2;
+    expect(result2Executed).toEqual(3)
+
+    const result3 = add1P(1).then(x => add1P(x)); // lambda that is number => Promise<number>
+    const result3Executed: number = await result3;
+    expect(result3Executed).toEqual(3);
+
+    // Now ask yourself, how is it it was possible to put functions with different signatures into .then(...)
+    // How is the system dealing with the fact that one returns a promise, but the other doesn't?
+    // The answer : Promise.then(...) can basically operate as both Promise.map(...) and Promise.flatMap(...)
+    // You can consider this one of two ways:
+    // - javascript is a dynamic language can it can whatever it likes with types.
+    // - the signature of the f in  .then(f) for the example above is effectively: (promiseResult: number) => number | Promise<number> | null | undefined
+    //    and the javascript runtime will flatMap the Promises for you.
+
+    // The other thing to consider is that Promises start to run immediately, but Tasks do nothing at all until they exec: await myTask();
+    // This has the effect of removing code placement initiating execution order from influencing code execution.
   })
 })
