@@ -17,14 +17,27 @@ import * as E from 'fp-ts/lib/Either';
 
 import { pipe } from 'fp-ts/lib/function';
 
-const getWordLengths = (s: string): number[] => (s.split(' ').map(word => word.length));
+
+// Prologue. Reminder of the broader context.
+// We are interested in functions.
+// Functions are 'programs'. We create programs by putting other programs together.
+// At the most basic level, this gives us a basic framework as to how we build programs.
+// What is the significance of map ? It lets us compose functions such that they can
+// be used in a wide variety of contexts (any data structure/wrapper/context that is mappable)
+// To do so, we moved our thinking about map to a higher level of abstration than simply
+// being Array.map
+// Today we will look at another little helper for composing functions,
+// that relates to a common situation we find ourselves in.
+
+const getWordLengths = (s: string): number[] => 
+  (s.split(' ').map(word => word.length));
 
 // Let's say we want to calculate the lengths of words in song names:
 describe('map vs flatmap', () => {
   test('array map', () => {
     const a: string[] = ['A Day in the Life', 'The Great Gig in the Sky', 'Where the Streets Have no Name'];
 
-    const result = a.map(getWordLengths);
+    const result: number[][] = a.map(getWordLengths);
     // const result = A.map(getWordLengths)(a);
 
     // with map, the result is an annoying array of arrays.
@@ -43,7 +56,7 @@ describe('map vs flatmap', () => {
   test('array flatmap', () => {
     const a: string[] = ['A Day in the Life', 'The Great Gig in the Sky', 'Where the Streets Have no Name'];
 
-    const result = a.flatMap(getWordLengths);
+    const result: number[] = a.flatMap(getWordLengths);
 
     expect(result).toEqual(
       [
@@ -127,8 +140,8 @@ describe('fp-ts chain (flatmap/bind)', () => {
     // Put it all together:
     const customerIdOv2: Option<string> = pipe(
       a, 
-      toNumber, 
-      O.chain(toCustomerId));
+      toNumber,                 // Option<number>
+      O.chain(toCustomerId));   // ... therefore chain because toCustomerId: x => Option<y>
 
     expect(customerIdOv2).toEqual(O.some('customer:1234'));
   });
@@ -152,19 +165,27 @@ describe('fp-ts chain (flatmap/bind)', () => {
 
     const customer1Option: Option<Customer> = pipe(
       customerId1Str,
-      toNumber,
-      O.chain(toCustomerId),
-      O.chain(getCustomer)
+      toNumber,               // Option<number>
+      O.chain(toCustomerId),  // Option<string>
+      O.chain(getCustomer)    // Option<Customer>
     );
 
     expect(customer1Option).toEqual(O.some({ name: 'Mary' }));
 
     const customer2Option: Option<Customer> = pipe(
       customerId2Str,
-      toNumber,
+      toNumber,     // Option<number>     (O.none)
       O.chain(toCustomerId),
       O.chain(getCustomer)
     );
+
+    //
+    // const num = toNumber("fdsdsdfs");
+    // if (num === undefined)return;
+    // const customerId = toCustomerId(num);
+    // if (customerId === undefined) return;
+    // const result = getCustomer(customerId);
+    // return result;
 
     expect(customer2Option).toEqual(O.none);
 
@@ -203,7 +224,8 @@ describe('fp-ts chain (flatmap/bind)', () => {
   }
 
   // Task
-  const getSearchParameters = (userInput: String): Task<SearchParameters> => T.of({ keywords: userInput.split(' ') });
+  const getSearchParameters = (userInput: String): Task<SearchParameters> => 
+      T.of({ keywords: userInput.split(' ') });
 
   const search = (searchParameters: SearchParameters): Task<SearchResult> => {
     const cannedDocuments = searchParameters.keywords.map((kw) => `${kw}.pdf`);
@@ -241,7 +263,8 @@ describe('fp-ts chain (flatmap/bind)', () => {
   // toNumberE is simply the Option version of toNumber, shifted into the Either version.
   // The error, of course, is a bit odd because there's only one sort of error.
   type CustomerIdError = string;
-  const toNumberE = (s: string): Either<CustomerIdError, number> => E.fromOption(() => 'Not a number')(toNumber(s));
+  const toNumberE = (s: string): Either<CustomerIdError, number> => 
+    E.fromOption(() => 'Not a number')(toNumber(s));
 
   // from earlier: type CustomerId = string
   const toCustomerIdE = (n: number): Either<CustomerIdError, CustomerId> =>
