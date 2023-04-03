@@ -55,38 +55,7 @@ const customerInvoices: Map<string, Invoice[]> = new Map([
 
 describe('array flatmap, fp-ts edition - i.e. chain = flatMap', () => {
 
-  const lines: string[] = [
-    "Line number one",
-    "two is better than one",
-    "Pythagoras considered three the perfect number",
-    "four and five begin with f",
-    "six, seven, eight, nine",
-    "zero, Or should this be on line one ?"
-  ];
-  
-  const replaceNonLettersWith = 
-    (replacement: string) => 
-      (s: string): string => 
-        s.replace(nonLettersRegex, replacement);
-
-  const getDigits = (s: string): number[] => pipe(s, splitOnSpace, A.map(getDigit), A.compact)
-
   test('1. array chain', () => {
-    // Use the functions immediately above to get from the lines 
-    // to an array with the number of digits in each word on all the lines
-
-    const digits: number[] = pipe(
-      lines,
-      A.map(replaceNonLettersWith(' ')),
-      A.chain(getDigits)
-    );
-
-    expect (digits).toEqual([1,2,1,3,4,5,6,7,8,9,0,1]);
-  })
-
-
-
-  test('2. array chain', () => {
     const customerIds: CustomerId[] = ['customer2', 'customer3', 'customer4'];
 
     const getInvoices = (customerId: string): Invoice[] => customerInvoices.get(customerId) || [];
@@ -105,7 +74,40 @@ describe('array flatmap, fp-ts edition - i.e. chain = flatMap', () => {
 
     expect(allCustomerTotal).toEqual(12);
   })
+
+  test('2. array chain', () => {
+
+    const lines: string[] = [
+      "Line number one",
+      "two is better than one",
+      "Pythagoras considered three the perfect number",
+      "four and five begin with f",
+      "six, seven, eight, nine",
+      "zero, Or should this be on line one ?"
+    ];
+    
+    const replaceNonLettersWith = 
+      (replacement: string) => 
+        (s: string): string => 
+          s.replace(nonLettersRegex, replacement);
+
+    const getDigits = (s: string): number[] => 
+      pipe(s, splitOnSpace, A.map(getDigit), A.compact)
+
+    // Use the functions immediately above to get from the lines 
+    // to an array with the number of digits in each word on all the lines
+
+    const digits: number[] = pipe(
+      lines,
+      A.map(replaceNonLettersWith(' ')),
+      A.chain(getDigits)
+    );
+
+    expect (digits).toEqual([1,2,1,3,4,5,6,7,8,9,0,1]);
+  })
+
 })
+
 
 type Email = string;
 type PhoneNumber = string;
@@ -313,9 +315,9 @@ describe('TaskEither Chain', () => {
   }
 
   test('7. TaskEither chain', async () => {
-    const customerId: CustomerId = 'customer1';
     // Use the above functions to calculate the customerBonus from 
 
+    const customerId: CustomerId = 'customer1';
     const customerBonus: TaskEither<Error, Bonus> = pipe(
       customerId,
       getCustomerTE,
@@ -328,8 +330,9 @@ describe('TaskEither Chain', () => {
     expect(executedCustomerBonusProgram).toEqual(E.right({discountPercent: 0}));
 
 
+    const customer99Id: CustomerId = 'customer99';
     const customerBonus99: TaskEither<Error, Bonus> = pipe(
-      'customer99',
+      customer99Id,
       getCustomerTE,
       TE.map(customer => customer.rating),
       TE.chain(getBonusesTE)

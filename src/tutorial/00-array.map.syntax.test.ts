@@ -38,6 +38,7 @@ describe('typescript array and syntactic sugar', () => {
     expect(result).toStrictEqual([2, 3, 4]);
   });
 
+
   // To understand where that leads to,
   // imagine we then want to do something with it after adding 1.
 

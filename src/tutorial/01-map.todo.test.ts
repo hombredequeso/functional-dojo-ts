@@ -110,16 +110,16 @@ describe('map exercises', () => {
   const toPrintableDollars = (n: number): string => (`$${n}.00`)
 
   test('7. Optionally, show me the money #1', () => {
-    const s1 = 'abc';
-    const s2 = '123';
 
     const result1 = pipe(
+      'abc',
       todo('#7a')
     )
 
     expect(result1).toEqual(O.none)
 
     const result2 = pipe(
+    '123',
      todo('#7b')
     )
 

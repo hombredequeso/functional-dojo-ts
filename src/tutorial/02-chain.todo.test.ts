@@ -1,4 +1,3 @@
-
 import * as A from 'fp-ts/lib/Array'
 import { Task } from 'fp-ts/lib/Task';
 import * as T from 'fp-ts/lib/Task';
@@ -58,44 +57,16 @@ const customerInvoices: Map<string, Invoice[]> = new Map([
 
 
 describe('array flatmap, fp-ts edition - i.e. chain = flatMap', () => {
-
   
-  const replaceNonLettersWith = 
-    (replacement: string) => 
-      (s: string): string => 
-        s.replace(nonLettersRegex, replacement);
-
-  const getDigits = (s: string): number[] => pipe(s, splitOnSpace, A.map(getDigit), A.compact)
-
-  const lines: string[] = [
-    "Line number one",
-    "two is better than one",
-    "Pythagoras considered three the perfect number",
-    "four and five begin with f",
-    "six, seven, eight, nine",
-    "zero, Or should this be on line one ?"
-  ];
 
   test('1. array chain', () => {
-    // Use the functions immediately above to get from the lines 
-    // to an array with the number of digits in each word on all the lines
-
-    // start with the lines and get the number of characters in each word
-    const digits: number[] = todo('#1');
-
-    expect (digits).toEqual([1,2,1,3,4,5,6,7,8,9,0,1]);
-  })
-
-
-
-  test('2. array chain', () => {
 
     const getInvoices = (customerId: string): Invoice[] => customerInvoices.get(customerId) || [];
 
     // Use the function above to go from the customerId's to an array of all the invoices, from all the customers, in one array.
     // This array of invoices will then be used to calculate the total for the customer's invoices.
     const customerIds: CustomerId[] = ['customer2', 'customer3', 'customer4'];
-    const allInvoices: Invoice[] = todo('$2')
+    const allInvoices: Invoice[] = todo('#1')
 
     const allCustomerTotal: number = pipe(
       allInvoices,
@@ -104,6 +75,36 @@ describe('array flatmap, fp-ts edition - i.e. chain = flatMap', () => {
 
     expect(allCustomerTotal).toEqual(12);
   })
+
+
+  test('2. array chain', () => {
+
+    const lines: string[] = [
+      "Line number one",
+      "two is better than one",
+      "Pythagoras considered three the perfect number",
+      "four and five begin with f",
+      "six, seven, eight, nine",
+      "zero, Or should this be on line one ?"
+    ];
+
+    const replaceNonLettersWith = 
+      (replacement: string) => 
+        (s: string): string => 
+          s.replace(nonLettersRegex, replacement);
+
+    const getDigits = (s: string): number[] => 
+      pipe(s, splitOnSpace, A.map(getDigit), A.compact)
+
+    // Use the functions immediately above to get from the lines 
+    // to an array with the number of digits in each word on all the lines
+
+    // start with the lines and get the number of characters in each word
+    const digits: number[] = todo('#2');
+
+    expect (digits).toEqual([1,2,1,3,4,5,6,7,8,9,0,1]);
+  })
+
 })
 
 type Email = string;
@@ -302,6 +303,7 @@ describe('TaskEither Chain', () => {
     expect(executedCustomerBonusProgram).toEqual(E.right({discountPercent: 0}));
 
 
+    const customer99Id: CustomerId = 'customer99';
     const customerBonus99: TaskEither<Error, Bonus> = todo('#7, same thing');
 
     const executedCustomerBonusProgram99 = await customerBonus99();
