@@ -153,6 +153,7 @@ describe('is referentially transparent: Immutability edition', () => {
   // * the coding changes to the business logic didn't happen 'automatically', it required
   //   some sort of intelligent refactoring, and notably, this could have been done in different ways.
   //   But the point is that the requirement of immutability forced us into rethinking what was going on.
+  // * that business logic is now explictly apparent in the addition of the getNextCustomerOrderId.
   // * createOrder is now severed from the tyranny of a dependency on the entire 'Customer' entity,
   //   and reduced to it's simplest possible dependencies, a string for the id.
 
