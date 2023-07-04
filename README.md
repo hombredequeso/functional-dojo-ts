@@ -13,7 +13,7 @@ Currently, see /tutorial folder.
 
 In order:
 
-01-array.map.syntax.text.ts
+00-array.map.syntax.text.ts
 * getting familiar with functional syntax.
 
 01-map.test.ts
@@ -24,3 +24,10 @@ In order:
 
 01-map.answers.test.ts
 * answers to 01-map.todo.test.ts
+
+# Notes
+
+`src/referential-transparency.test.ts`
+
+A simple, contrived illustration of what referential transparency can means
+considered in terms of the mutability/immutability of data entities.
