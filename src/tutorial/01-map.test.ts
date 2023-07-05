@@ -1,4 +1,4 @@
-import { JustOne } from 'justone';
+import { JustOne } from '../pipelines/justone';
 
 import { Tree } from 'fp-ts/lib/Tree';
 import * as Tr from 'fp-ts/lib/Tree';
@@ -70,11 +70,17 @@ describe('map with fp-ts', () => {
     const result: Option<string> = O.map(numToString)(a)
     expect(result).toEqual(O.some('1'))
 
+
     // If the 'array' had no elements in it...
     const b: Option<number> = O.none;
     const resultb: Option<string> = O.map(numToString)(b)
     expect(resultb).toEqual(O.none)
   })
+    // Option<T> can be thought of a data structure similar to something like:
+    // type NullableT<T> = T | null;
+    // The benefit it brings is the 'map' function means you don't end up writing 
+    //   (if (x === null) then ... else ...) all over the place.
+
 
   test('Set: another type of collection, unordered, only one of each element', () => {
     const numToString = (x: number): string => x.toString();
@@ -130,22 +136,6 @@ describe('map with fp-ts', () => {
   //              if the tree was a binary tree with 2 elements, so will the mapped one.
   //    * the VALUES of the elements in the container/data structure are changed.
 
-  // Now turns out that map can be used for other things, that are not data structures.
-
-  // NOTE: Task is something in fp-ts. To get started, think of it as a Strictly typed Promise 
-  //      (it isn't strictly a Promise, but we'll get to that another time)
-  test('task map', async () => {
-    const a: Task<number> = T.of(1);
-    const numToString = (x: number): string => x.toString();
-
-    const result: Task<string> = T.map(numToString)(a)
-
-    const executedResult: string = await result();
-
-    expect(executedResult).toEqual('1')
-  })
-
-  // So what just happened there???
 
   // But wait, there's more:
 
@@ -169,9 +159,28 @@ describe('map with fp-ts', () => {
   // If you are still stuck, think of "Either<Error" as being like Option,
   // and if there is an error, then it is like None. And if there is a right/success, it is Some
 
+  // Parallelling Option<T>, Either<E, T> can be though of as being similar to:
+  // type TOrError<T, E> = T | E
+  // with the benefit of a map function when you want to ignore errors.
+
+  // Now turns out that map can be used for other things, that are not data structures.
+
+  // NOTE: Task is something in fp-ts. To get started, think of it as a Strictly typed Promise 
+  //      (it isn't strictly a Promise, but we'll get to that another time)
+  test('task map', async () => {
+    const a: Task<number> = T.of(1);
+    const numToString = (x: number): string => x.toString();
+
+    const result: Task<string> = T.map(numToString)(a)
+
+    const executedResult: string = await result();
+
+    expect(executedResult).toEqual('1')
+  })
+
+  // So what just happened there???
 
   // But wait, there's even more...
-
 
   type UnixTime = number;
 

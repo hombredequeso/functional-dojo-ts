@@ -6,11 +6,6 @@ import * as T from 'fp-ts/lib/Task';
 import { Option } from 'fp-ts/lib/Option';
 import * as O from 'fp-ts/lib/Option';
 
-
-import { IO } from 'fp-ts/lib/IO';
-import * as Io from 'fp-ts/lib/IO';
-
-
 import { Either } from 'fp-ts/lib/Either';
 import * as E from 'fp-ts/lib/Either';
 
