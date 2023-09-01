@@ -34,7 +34,7 @@ type Order = {
   status: OrderStatus
 };
 
-// axois world
+// axios world
 const orders: Map<string, Order> = new Map<string,Order>([
   ["123", {id: "123", description: "order123", updates: [], status: 'OPEN'}]
 ]);
@@ -63,17 +63,21 @@ const getOrder = (id: string): Task<Option<Order>> => {
 
 // Cancel order:
 
-// type OrderDoesNotExist = {id: string}
-// type InvalidOrderState = {id: string, currentState: OrderStatus}
+type OrderDoesNotExist = {id: string, _type: 'order-does-not-exist'}
+const orderDoesNotExist = (id: string): OrderDoesNotExist => ({id, _type: 'order-does-not-exist'});
+
+type InvalidOrderState = {order: Order, _type: 'invalid-order-state'}
+const invalidOrderState = (order: Order): InvalidOrderState => ({order, _type: 'invalid-order-state'});
 
 
 // Domain
-type CancelOrderError = 'order-does-not-exist' | 'invalid-order-state';
+type CancelOrderError = OrderDoesNotExist | InvalidOrderState;
+
 const cancelOrderDomain = (order: Order): Either<CancelOrderError, Order> => {
   return order.status === 'OPEN' ?
   E.right({ ...order, status: 'CANCELLED'}):
-  E.left('invalid-order-state');
-}
+  E.left(invalidOrderState(order));
+};
 
 // Lift
 const cancelOrderDomainTE = (order: Order): TaskEither<CancelOrderError, Order> => TE.fromEither(cancelOrderDomain(order))
@@ -83,7 +87,7 @@ const cancelOrderTE = (id: string): TaskEither<CancelOrderError, Order> => {
   return pipe(
     id,
     getOrder,
-    TE.fromTaskOption<CancelOrderError>(() => 'order-does-not-exist'),
+    TE.fromTaskOption<CancelOrderError>(() => orderDoesNotExist(id)),
     TE.chain(cancelOrderDomainTE)
   );
 }
@@ -91,11 +95,11 @@ const cancelOrderTE = (id: string): TaskEither<CancelOrderError, Order> => {
 // Update order: 
 
 // Domain
-type UpdateOrderError = 'order-does-not-exist' | 'invalid-order-state';
+type UpdateOrderError = OrderDoesNotExist | InvalidOrderState;
 const updateOrderDomain = (order: Order, update: string): Either<UpdateOrderError, Order> => {
   return order.status === 'OPEN' ?
   E.right({ ...order, updates: order.updates.concat(update)}):
-  E.left('invalid-order-state');
+  E.left(invalidOrderState(order));
 }
 
 // Lift
@@ -106,7 +110,7 @@ const updateOrderTE = (id: string, update: string): TaskEither<UpdateOrderError,
   return pipe(
     id,
     getOrder,
-    TE.fromTaskOption<UpdateOrderError>(() => 'order-does-not-exist'),
+    TE.fromTaskOption<UpdateOrderError>(() => orderDoesNotExist(id)),
     TE.chain(updateOrderDomainTE(update))
   );
 }
@@ -127,9 +131,15 @@ const getOrderEndpoint = async (req: express.Request, res: express.Response): Pr
   return;
 }
 
+const getCancelHttpStatusCode = (error: CancelOrderError): number => {
+  switch(error._type){
+    case "order-does-not-exist": return 404;
+    case "invalid-order-state": return 309;
+  }
+}
 
-const getHttpStatusCode = (error: CancelOrderError): number => {
-  switch(error){
+const getUpdateErrorHttpStatusCode = (error: UpdateOrderError): number => {
+  switch(error._type){
     case "order-does-not-exist": return 404;
     case "invalid-order-state": return 309;
   }
@@ -142,7 +152,7 @@ const cancelOrderEndpoint = async (req: express.Request, res: express.Response):
 
   const executedResult: Either<CancelOrderError, Order> = await cancelledOrder();
   E.match(
-    (error: CancelOrderError) => {res.statusCode = getHttpStatusCode(error);  return res.send(); },
+    (error: CancelOrderError) => {res.statusCode = getCancelHttpStatusCode(error);  return res.send(); },
     (order) => res.json(order)
   )(executedResult);
 
@@ -158,7 +168,7 @@ const updateOrderEndpoint = async (req: express.Request, res: express.Response):
 
   const executedResult: Either<UpdateOrderError, Order> = await updatedOrder();
   E.match(
-    (error: CancelOrderError) => {res.statusCode = getHttpStatusCode(error);  return res.send(); },
+    (error: UpdateOrderError) => {res.statusCode = getUpdateErrorHttpStatusCode(error);  return res.send(); },
     (order) => res.json(order)
   )(executedResult);
 
