@@ -31,13 +31,14 @@ describe('typescript array and syntactic sugar', () => {
     // read this as:
     // take the array 'ints', and feed it into A.map(add1)
 
-    // Try and understand what's happening when you hover over 'a' in the pipe, and 'map'.
+    // Try and understand what's happening when you hover over 'map' in the pipe.
     const result: number[] = pipe(
       ints,                                // result of this line is: number[]
-      A.map(add1)                       // result of this line is: string[]
-                                        // in other words it has done this: A.map(add1)(ints)
+      A.map(add1)                       // result of this line is: number[]
     );
     expect(result).toStrictEqual([2, 3, 4]);
+    
+    // in other words it has done this: A.map(add1)(ints)
   });
 
 
@@ -63,6 +64,7 @@ describe('typescript array and syntactic sugar', () => {
     );
 
     expect(result).toStrictEqual(['customer:2', 'customer:3', 'customer:4']);
+
   });
 
   // Which is exactly the same as this:
@@ -71,10 +73,23 @@ describe('typescript array and syntactic sugar', () => {
     const add1 = (x: number) => x + 1;
     const turnIntoCustomerId = (x: number) => `customer:${x}`;
 
-    const a: number[] = [1, 2, 3];
-    const aWith1Added = A.map(add1)(a);
+    const ints: number[] = [1, 2, 3];
+    const aWith1Added = A.map(add1)(ints);
     const customerIds = A.map(turnIntoCustomerId)(aWith1Added);
     expect(customerIds).toStrictEqual(['customer:2', 'customer:3', 'customer:4']);
+  });
+
+  // or this:
+
+  test('map using fp-ts without pipes v2', () => {
+    const add1 = (x: number) => x + 1;
+    const turnIntoCustomerId = (x: number) => `customer:${x}`;
+
+    const ints: number[] = [1, 2, 3];
+
+    // So it has done this, but you can read it forwards rather than backwards:
+    const result = A.map(turnIntoCustomerId)(A.map(add1)(ints));
+    expect(result).toStrictEqual(['customer:2', 'customer:3', 'customer:4']);
   });
 });
 
@@ -83,4 +98,6 @@ describe('typescript array and syntactic sugar', () => {
 // The main reasons are:
 //  * curried functions open up options that you don't have with non-curried functions.
 //      non-curried function: map(f, a), curried function: map(f)(a)
+//  * the 'syntactic sugar' of pipe lets you read sequences of instructions forwards
+//      rather than backwards.
 //  * limitations in the Typescript type detection.
