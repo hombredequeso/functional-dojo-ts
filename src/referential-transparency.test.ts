@@ -119,10 +119,13 @@ describe('is referentially transparent: Immutability edition', () => {
   }
 
   test('Reasoning about sequences of statements', () => {
-    const customer: Customer = createCustomer(123)
+    const customer: Customer = createCustomer(123);
+
     const customerStatsBeforeNewOrder: string = getCustomerStatistics(customer);
+
     const [customerOrderId, updatedCustomer]: [string, Customer] = 
       getNextCustomerOrderId(customer);
+
     const order: Order = createOrder(customerOrderId);
     const customerStatsAfterNewOrder: string = getCustomerStatistics(updatedCustomer);
 

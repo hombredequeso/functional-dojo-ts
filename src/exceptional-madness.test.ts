@@ -1,7 +1,7 @@
 
-describe('not referentially transparency', () => {
+describe('to except or not to except', () => {
 
-  const parseToNumber = (s: string): number => {
+  const parseToNumberE = (s: string): number => {
     const parseResult = parseInt(s);
     if (Number.isNaN(parseResult)) {
       throw 'Not a number';
@@ -9,9 +9,22 @@ describe('not referentially transparency', () => {
     return parseResult;
   }
 
-  const createCustomer = (s: string) => {
+
+  const parseToNumberOrNull = (s: string): number|null => {
+    const parseResult = parseInt(s);
+    if (Number.isNaN(parseResult)) {
+      return null;
+    }
+    return parseResult;
+  }
+
+  type Customer = {
+    id: number
+  }
+
+  const createCustomer = (s: string): Customer => {
     const customer = {
-      id: parseToNumber(s)
+      id: parseToNumberE(s)
     }
     return customer;
   }
@@ -38,23 +51,49 @@ describe('not referentially transparency', () => {
     // The customerId actually comes in from somewhere else, say an http request
     const customerId = '123';
 
-    const customer = undefined;
+    let successfullyCreatedCustomer = false;
+    let customer = undefined;
     try {
-      const customer = createCustomer(customerId);
+      customer = createCustomer(customerId);
+      successfullyCreatedCustomer = true;
     } catch (e) {
-      const customer = null;
+      successfullyCreatedCustomer = false;
     }
 
-    // now move on with customer, which could be a Customer or null.
+    // Instead of expectation, production code might be doing something like
+    // setting http status code.
+    expect(successfullyCreatedCustomer).toStrictEqual(true)
   })
 
   // And what happens at a later time, if someone see the createCustomer function
-  // and uses it somewhere else. Everything is ok, right up to the point where it
-  // unexpectedly blows up because of parseToNumber.
+  // and uses it somewhere else. 
+  // If they use it on the basis of it's signature, it says:
+  //    const createCustomer = (s: string): Customer => {
+  // so it is likely they will use it on the basis of that signature.
+  // Everything will be ok, until it runs with a non-numeric (s: string) value, and then
+  // an exception will happen - maybe unexpectedly in production.
 
-  // Or, you could handle the exception in createCustomer.
-  // And everything is ok. Until someone sees parseToNumber and uses that in some other
-  // context, without reading the implementation code in parseToNumber 
-  // (and any and every method/function that it may call that could also throw an exception)
-  // to determine if it might throw any exceptions.
+  // How do you know 
+  //    const createCustomer = (s: string): Customer => {
+  // throws an exception? You have to read the function, and every function that function calls
+  // and see if any of them throw exceptions.
+  // (or you can start writing comments in the code warning everyone that is what it does!)
+
+
+  // Alternatively (as one possible option).
+
+  // In real code this allows for different errors conditions to be surfaced.
+  type CreateCustomerError = 'Invalid-Customer-id';
+
+  const createCustomer2 = (s: string): Customer | CreateCustomerError => {
+    const id = parseToNumberOrNull(s);
+    return (id !== null) ? {id} : 'Invalid-Customer-id'
+  }
+
+  // Now, it is impossible to use createCustomer2 without taking into account that it could result in errors,
+  // because the type system tells you as much.
+  // The signature of the function declares all possible outcomes.
+  // Exceptions, if they were to occur, are restricted to truly exceptional conditions: e.g. OutOfMemory.
+  // Taking a string, parsing it, and discovering it isn't a number is not exceptional, it is a perfectly normal, expected outcome.
+  
 })
