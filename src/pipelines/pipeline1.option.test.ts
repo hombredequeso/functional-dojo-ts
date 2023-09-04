@@ -42,7 +42,7 @@ const handleCommand = (cmd: IncreaseCommand): Option<CommandResult> => {
 
 const executeRequest = (request: RequestIn): Option<CommandResult> => {
   const cmd: Option<IncreaseCommand> = toCommand(request);
-  const handleResult: Option<CommandResult> = O.chain(handleCommand)(cmd);
+  const handleResult: Option<CommandResult> = O.flatMap(handleCommand)(cmd);
   return handleResult;
 }
 

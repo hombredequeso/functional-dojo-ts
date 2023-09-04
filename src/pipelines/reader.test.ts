@@ -69,7 +69,7 @@ describe('with reader', () => {
     // but pops out in the output type
     //    Reader<Config
     // Additional cost is the need to then understand
-    // what R.chain is doing when composing functions
+    // what R.flatMap is doing when composing functions
     // together, but at least the composing looks cleaner
     // than managing the extra Config argument everywhere.
     // On it's own, the benefits of Reader<Config may not
@@ -79,14 +79,14 @@ describe('with reader', () => {
 
     // This reads closer to the first version.
     const prog = (s: string): Reader<Config, Entity> => 
-      R.chain(getEntityR)(getIdR(s));
+      R.flatMap(getEntityR)(getIdR(s));
 
     // Alternatively, using the pipe syntax:
     const progAlternate = (s: string): Reader<Config, Entity> =>
     pipe(
       s,
       getIdR,
-      R.chain(getEntityR)
+      R.flatMap(getEntityR)
     )
 
     const config: Config = {
@@ -111,7 +111,7 @@ describe('with reader', () => {
 // That is what Reader<C, T> is, a function that takes Config (C) and returns number (T)
 
 
-describe('reader and map/chain', () => {
+describe('reader and map/flatMap', () => {
   test('compose functions', () => {
 
   const getId = (s: string): Reader<Config, number> =>
@@ -125,14 +125,14 @@ describe('reader and map/chain', () => {
   // First, getId, then getEntity, then toResponse
 
     const prog = (s: string): Reader<Config, string> => 
-      R.map(toResponse)(R.chain(getEntityR)(getIdR(s)));
+      R.map(toResponse)(R.flatMap(getEntityR)(getIdR(s)));
 
     // Alternatively, using the pipe syntax:
     const progAlternate = (s: string): Reader<Config, string> =>
     pipe(
       s,
       getId,
-      R.chain(getEntity),
+      R.flatMap(getEntity),
       R.map(toResponse)
     )
 
@@ -146,7 +146,7 @@ describe('reader and map/chain', () => {
   })
 })
 
-// So what would reader map/chain look like??
+// So what would reader map/flatMap look like??
 // Reader.map(f: Tin => TOut)(a: Reader<TConfig, TIn>) : Reader<TConfig, TOut> => {
 //     (config: TConfig)  => {
           // const aa = a(config);
@@ -155,8 +155,8 @@ describe('reader and map/chain', () => {
 // }
 // }
 
-// And chain??
-// reader.chain(f: Tin => Reader<TConfig, TOut>)(a: Reader<TConfig, TIn>): Reader<TConfig, TOut> => {
+// And flatMap??
+// reader.flatMap(f: Tin => Reader<TConfig, TOut>)(a: Reader<TConfig, TIn>): Reader<TConfig, TOut> => {
 //   (config: TConfig ) => {
 //     const aa: TIn = a(config);
 //     const b: Reader<TConfig, TOut> = f(aa);

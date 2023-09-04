@@ -3,7 +3,7 @@
 // Considering basic operations over data structures, take list as an example.
 // - filter: includes/excludes values, but structure remains the same
 // - map: structure same, values all change
-// - flatmap (chain): ability to merge structures, when you get a context in a context
+// - flatmap (flatMap): ability to merge structures, when you get a context in a context
 
 // - reduce: take
 

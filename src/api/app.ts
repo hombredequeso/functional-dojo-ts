@@ -88,7 +88,7 @@ const cancelOrderTE = (id: string): TaskEither<CancelOrderError, Order> => {
     id,
     getOrder,
     TE.fromTaskOption<CancelOrderError>(() => orderDoesNotExist(id)),
-    TE.chain(cancelOrderDomainTE)
+    TE.flatMap(cancelOrderDomainTE)
   );
 }
 
@@ -111,7 +111,7 @@ const updateOrderTE = (id: string, update: string): TaskEither<UpdateOrderError,
     id,
     getOrder,
     TE.fromTaskOption<UpdateOrderError>(() => orderDoesNotExist(id)),
-    TE.chain(updateOrderDomainTE(update))
+    TE.flatMap(updateOrderDomainTE(update))
   );
 }
 

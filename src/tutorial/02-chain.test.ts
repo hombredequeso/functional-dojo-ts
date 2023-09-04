@@ -64,7 +64,7 @@ describe('map vs flatmap', () => {
 });
 
 
-describe('fp-ts chain (flatmap/bind)', () => {
+describe('fp-ts flatMap (flatmap/bind)', () => {
   test('array map', () => {
     const a: string[] = ['A Day in the Life', 'The Great Gig in the Sky', 'Where the Streets Have no Name'];
 
@@ -77,10 +77,10 @@ describe('fp-ts chain (flatmap/bind)', () => {
     ]);
   });
 
-  test('array chain', () => {
+  test('array flatMap', () => {
     const a: string[] = ['A Day in the Life', 'The Great Gig in the Sky', 'Where the Streets Have no Name'];
 
-    const result = A.chain(getWordLengths)(a);
+    const result = A.flatMap(getWordLengths)(a);
 
     expect(result).toEqual([1, 3, 2, 3, 4, 3, 5, 3, 2, 3, 3, 5, 3, 7, 4, 2, 4]);
   });
@@ -91,7 +91,7 @@ describe('fp-ts chain (flatmap/bind)', () => {
   // * so what is flatmap doing? It maps the value, but it 'knows' something about managing the structure/wrapper/context
   //    that the value comes back in, and can 'undo' a double structure/wrapper/context.
 
-  // So, as for map, let's now look at other structure/wrapper/contexts, and see if the concept of flatMapping (chain) applies...
+  // So, as for map, let's now look at other structure/wrapper/contexts, and see if the concept of flatMapping (flatMap) applies...
 
   // Hello Option:
   const toNumber = (s: string): Option<number> => {
@@ -108,7 +108,7 @@ describe('fp-ts chain (flatmap/bind)', () => {
       O.map((n) => `customer:${n}`)
     );
 
-  test('option chain', () => {
+  test('option flatMap', () => {
     const a: string = '1234';
 
     const parsedA: Option<number> = toNumber(a);
@@ -117,7 +117,7 @@ describe('fp-ts chain (flatmap/bind)', () => {
     // Oh ugly double wrapper...
     expect(customerIdOptionOption).toEqual(O.some(O.some('customer:1234')));
 
-    const customerIdO: Option<string> = O.chain(toCustomerId)(parsedA);
+    const customerIdO: Option<string> = O.flatMap(toCustomerId)(parsedA);
     // vs. thing of beauty:
     expect(customerIdO).toEqual(O.some('customer:1234'));
 
@@ -125,18 +125,18 @@ describe('fp-ts chain (flatmap/bind)', () => {
     // Map gave us:
     // O.map(a => Option<b>)(Option<a>) => Option<Option<b>>
 
-    // Chain (flatmap) gave us:
-    // O.chain(a => Option<b>)(Option<a>) => Option<b>
+    // flatMap (flatmap) gave us:
+    // O.flatMap(a => Option<b>)(Option<a>) => Option<b>
 
     // and compare to arrays (and think again as if Option were a 0-1 element array)
     // O.map(a => Array<b>)(Array<a>) => Array<Array<b>>
-    // O.chain(a => Array<b>)(Array<a>) => Array<b>
+    // O.flatMap(a => Array<b>)(Array<a>) => Array<b>
 
     // Put it all together:
     const customerIdOv2: Option<string> = pipe(
       a, 
       toNumber,                 // Option<number>
-      O.chain(toCustomerId));   // ... therefore chain because toCustomerId: x => Option<y>
+      O.flatMap(toCustomerId));   // ... therefore flatMap because toCustomerId: x => Option<y>
 
     expect(customerIdOv2).toEqual(O.some('customer:1234'));
   });
@@ -154,15 +154,15 @@ describe('fp-ts chain (flatmap/bind)', () => {
   const getCustomer = (customerId: CustomerId): Option<Customer> => 
     O.fromNullable(customers.get(customerId));
 
-  test('option chain 2', () => {
+  test('option flatMap 2', () => {
     const customerId1Str = '8765';
     const customerId2Str = '9999';
 
     const customer1Option: Option<Customer> = pipe(
       customerId1Str,
       toNumber,               // Option<number>
-      O.chain(toCustomerId),  // Option<string>
-      O.chain(getCustomer)    // Option<Customer>
+      O.flatMap(toCustomerId),  // Option<string>
+      O.flatMap(getCustomer)    // Option<Customer>
     );
 
     expect(customer1Option).toEqual(O.some({ name: 'Mary' }));
@@ -170,8 +170,8 @@ describe('fp-ts chain (flatmap/bind)', () => {
     const customer2Option: Option<Customer> = pipe(
       customerId2Str,
       toNumber,     // Option<number>     (O.none)
-      O.chain(toCustomerId),
-      O.chain(getCustomer)
+      O.flatMap(toCustomerId),
+      O.flatMap(getCustomer)
     );
 
     //
@@ -190,11 +190,11 @@ describe('fp-ts chain (flatmap/bind)', () => {
     const customer3Option: Option<Customer> = pipe(
       'Not a number',
       toNumber,                 // toNumber produced an Option<number> with value O.none;
-      O.chain(toCustomerId),    // So O.chain will take every single value in the option, of which there are none, and transforms/maps the value, 
+      O.flatMap(toCustomerId),    // So O.flatMap will take every single value in the option, of which there are none, and transforms/maps the value, 
                                 // and turns the double Option wrapping into just one Option
                                 // But of course, there are no values in there. So it just returns/forwards on the O.none
-      O.chain(getCustomer)      // The previous line produced O.none.
-                                // Again, we O.chain over it, which gets each value in the option (of which there are none) and ... etc etc.
+      O.flatMap(getCustomer)      // The previous line produced O.none.
+                                // Again, we O.flatMap over it, which gets each value in the option (of which there are none) and ... etc etc.
     );
 
     expect(customer2Option).toEqual(O.none);
@@ -227,17 +227,17 @@ describe('fp-ts chain (flatmap/bind)', () => {
     return T.of({ documentName: cannedDocuments });
   };
 
-  test('Task chain', async () => {
+  test('Task flatMap', async () => {
     const userInput: string = 'abc def';
 
     const searchParametersT: Task<SearchParameters> = getSearchParameters(userInput);
     const _searchResultTT: Task<Task<SearchResult>> = T.map((p: SearchParameters) => search(p))(searchParametersT);
     // So, T.map is not up to the job, because it leaves us with Task<Task<
     // But again, this is structurally the same thing we saw before.
-    // So one would expect that maybe there is a Task.chain operation, that will map the value,
+    // So one would expect that maybe there is a Task.flatMap operation, that will map the value,
     // but also flatten out the Task<Task< into Task<
 
-    const searchResultT: Task<SearchResult> = T.chain((p: SearchParameters) => search(p))(searchParametersT);
+    const searchResultT: Task<SearchResult> = T.flatMap((p: SearchParameters) => search(p))(searchParametersT);
 
     const executedSearchResult: SearchResult = await searchResultT();
 
@@ -247,7 +247,7 @@ describe('fp-ts chain (flatmap/bind)', () => {
     const searchResultT2: Task<SearchResult> = pipe(
       userInput,
       getSearchParameters,
-      T.chain(search)
+      T.flatMap(search)
     );
     const executedSearchResult2: SearchResult = await searchResultT2();
     expect(executedSearchResult2).toEqual({ documentName: ['abc.pdf', 'def.pdf'] });
@@ -272,7 +272,7 @@ describe('fp-ts chain (flatmap/bind)', () => {
       E.map((n: number) => `customer:${n}`)
     );
 
-  test('either chain', () => {
+  test('either flatMap', () => {
     const stringIn = '1234';
 
     const asNumberE: Either<CustomerIdError,number> = toNumberE(stringIn);
@@ -286,24 +286,24 @@ describe('fp-ts chain (flatmap/bind)', () => {
     // Either<Error, Either<Error, CustomerId>>
     // T<            T<            CustomerId
 
-    // So, again, we might hope that their is a Either.chain operation, that lets us map into the value
+    // So, again, we might hope that their is a Either.flatMap operation, that lets us map into the value
     // and undo the double wrapper/context/data structure problem. As you might imagine...
 
-    const customerIdE: Either<CustomerIdError, CustomerId> = E.chain(toCustomerIdE)(asNumberE);
+    const customerIdE: Either<CustomerIdError, CustomerId> = E.flatMap(toCustomerIdE)(asNumberE);
 
     expect(customerIdE).toEqual(E.right('customer:1234'))
 
     const customerId2E: Either<CustomerIdError, CustomerId> = pipe(
       '123',
       toNumberE,
-      E.chain(toCustomerIdE)      // The failure happened here
+      E.flatMap(toCustomerIdE)      // The failure happened here
     )
     expect(customerId2E).toEqual(E.left('Number out of range'))
 
     const customerId3E: Either<CustomerIdError, CustomerId> = pipe(
       'This is not a number',
       toNumberE,                  // This time, the failure happened here.
-      E.chain(toCustomerIdE)
+      E.flatMap(toCustomerIdE)
     )
     expect(customerId3E).toEqual(E.left('Not a number'))
   })

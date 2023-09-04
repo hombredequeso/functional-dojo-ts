@@ -65,7 +65,7 @@ const toRequestResponse = (cmdResult: CommandResult): RequestResponse => {
 const executeRequest = (request: RequestIn): TaskEither<Error, RequestResponse> => {
   const cmd: Either<Error, IncreaseCommand> = toCommand(request);
   const cmdTE: TaskEither<Error, IncreaseCommand> = TE.fromEither(cmd);
-  const handleResult: TaskEither<Error, CommandResult> = TE.chain(handleCommand)(cmdTE);
+  const handleResult: TaskEither<Error, CommandResult> = TE.flatMap(handleCommand)(cmdTE);
   const requestResponse = TE.map(toRequestResponse)(handleResult)
   return requestResponse;
 }

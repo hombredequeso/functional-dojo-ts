@@ -50,13 +50,13 @@ describe('javascript array', () => {
     const result: Option<Option<string>> = O.map(certainNumsToString)(a)
     expect(result).toEqual(O.some(O.some('1')))
 
-    expect(O.chain(certainNumsToString)(a))
+    expect(O.flatMap(certainNumsToString)(a))
       .toEqual(O.some('1'))
 
-    expect(O.chain(certainNumsToString)(O.some(2)))
+    expect(O.flatMap(certainNumsToString)(O.some(2)))
       .toEqual(O.none)
 
-    expect(O.chain(certainNumsToString)(O.none))
+    expect(O.flatMap(certainNumsToString)(O.none))
       .toEqual(O.none)
   })
 
@@ -69,7 +69,7 @@ describe('javascript array', () => {
     const executedResult: string = await(await result())();
     expect(executedResult).toEqual('1')
 
-    const resultfm: Task<string> = T.chain(numToString)(a)
+    const resultfm: Task<string> = T.flatMap(numToString)(a)
     expect(await resultfm()).toEqual('1')
   })
 
@@ -88,7 +88,7 @@ describe('javascript array', () => {
     const executedResult: string = result({context: 'contextA'})({context: 'contextB'});
     expect(executedResult).toEqual('1contextB');
 
-    const resultfm: Reader<Config, string> = R.chain(numToString)(a);
+    const resultfm: Reader<Config, string> = R.flatMap(numToString)(a);
     expect(resultfm({context: 'prod'})).toEqual('1prod')
   })
 
@@ -101,8 +101,8 @@ describe('javascript array', () => {
     expect(result).toEqual(E.right(E.right('1')))
 
 
-    expect(E.chain(numToString)(E.right(1))).toEqual(E.right('1'))
-    expect(E.chain(numToString)(E.left('already errored'))).toEqual(E.left('already errored'))
-    expect(E.chain(numToString)(E.right(2))).toEqual(E.left('too even'))
+    expect(E.flatMap(numToString)(E.right(1))).toEqual(E.right('1'))
+    expect(E.flatMap(numToString)(E.left('already errored'))).toEqual(E.left('already errored'))
+    expect(E.flatMap(numToString)(E.right(2))).toEqual(E.left('too even'))
   })
 })

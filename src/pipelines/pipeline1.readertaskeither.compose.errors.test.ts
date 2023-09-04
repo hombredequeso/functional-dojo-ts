@@ -130,7 +130,7 @@ type ExecutionError = HandleCommandError | ToCommandError
 const executeRequestLongForm = (request: RequestIn): ReaderTaskEither<Config, ExecutionError, RequestResponse> => {
   const cmd: Either<ToCommandError, IncreaseCommand> = toCommand(request);
   const cmdTE: ReaderTaskEither<Config, ExecutionError, IncreaseCommand> = RTE.fromEither(cmd);
-  const handleResult: ReaderTaskEither<Config, ExecutionError, CommandResult> = RTE.chain(handleCommand)(cmdTE);
+  const handleResult: ReaderTaskEither<Config, ExecutionError, CommandResult> = RTE.flatMap(handleCommand)(cmdTE);
   const result: ReaderTaskEither<Config, ExecutionError, RequestResponse> = RTE.map(toRequestResponse)(handleResult);
   return result;
 }
@@ -139,7 +139,7 @@ const executeRequest = (request: RequestIn): ReaderTaskEither<Config, ExecutionE
   request,
   toCommand,
   RTE.fromEither,
-  RTE.chain(handleCommand),
+  RTE.flatMap(handleCommand),
   RTE.map(toRequestResponse)
 );
 

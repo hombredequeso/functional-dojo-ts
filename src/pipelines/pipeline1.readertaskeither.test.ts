@@ -71,7 +71,7 @@ const toRequestResponse = (cmdResult: CommandResult): RequestResponse => {
 const executeRequest = (request: RequestIn): ReaderTaskEither<Config, Error, RequestResponse> => {
   const cmd: Either<Error, IncreaseCommand> = toCommand(request);
   const cmdTE: ReaderTaskEither<Config, Error, IncreaseCommand> = RTE.fromEither(cmd);
-  const handleResult: ReaderTaskEither<Config, Error, CommandResult> = RTE.chain(handleCommand)(cmdTE);
+  const handleResult: ReaderTaskEither<Config, Error, CommandResult> = RTE.flatMap(handleCommand)(cmdTE);
   const result: ReaderTaskEither<Config, Error, RequestResponse> = RTE.map(toRequestResponse)(handleResult);
   return result;
 }

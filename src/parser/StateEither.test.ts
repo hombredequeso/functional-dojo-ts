@@ -20,7 +20,7 @@ type StateEither<S,E,A> = State<S, Either<E, A>>
 const SE = {
   map: ET.map(S.Functor), // EitherT (transformer), map function, together with State.Functor.
   mapL: ET.mapLeft(S.Functor),
-  chain: ET.chain(S.Monad),
+  flatMap: ET.chain(S.Monad),
   ap: ET.ap(S.Apply),
   alt: ET.alt(S.Monad),
 };
@@ -40,7 +40,7 @@ describe('StateEither', () => {
   const s1: State<string, number> = S.of(1)
   const s2: State<string, number> = (s: string) => [2, 'abc'];
 
-  test('chain', () => {
+  test('flatMap', () => {
     const f: (x:number) => State<string, Either<Error, string>> = (x: number) => (stateIn: TestState) => {
       const result =  x + 1;
       const stateOut = stateIn + `; ${x} => ${result}`
@@ -48,7 +48,7 @@ describe('StateEither', () => {
     }
 
     const a: State<TestState,Either<Error, number>> = S.of(E.of(1));
-    const result = SE.chain(f)(a)('StartState');
+    const result = SE.flatMap(f)(a)('StartState');
     expect(result).toEqual([E.of('StartState; 2'), 'StartState; 1 => 2'])
   })
 
@@ -149,7 +149,7 @@ const charParser = (s: Character): Parser<Character> =>
   tryParse(
     pipe(
       anyParser,
-      SE.chain((anyChar: Character) => (anyChar === s)? S.of(E.of(s)): S.of(E.left(`Error: wrong character`)))
+      SE.flatMap((anyChar: Character) => (anyChar === s)? S.of(E.of(s)): S.of(E.left(`Error: wrong character`)))
     )
   );
 
@@ -208,7 +208,7 @@ describe('oneOfParser', () => {
 
 // Parse, getting an A, then a B. Return as a tuple.
 const aThenbParser = <A, B>(aParser: Parser<A>, bParser: Parser<B>): Parser<[A,B]> => tryParse(
-  SE.chain((a:A) => SE.map((b:B) => [a,b] as [A,B])(bParser) )(aParser)
+  SE.flatMap((a:A) => SE.map((b:B) => [a,b] as [A,B])(bParser) )(aParser)
 )
 
 
@@ -294,7 +294,7 @@ const nParser = <T>(parser: Parser<T>): Parser<T[]> => {
 
   return  pipe(
     optionalOf(parser), // Parser<Option<T>>
-    SE.chain(optionTtoParserTs));
+    SE.flatMap(optionTtoParserTs));
 }
 
 
@@ -333,7 +333,7 @@ describe('nParser', () => {
 const nParserAtLeast1 = <T>(parser: Parser<T>): Parser<T[]> => 
   pipe(
     parser,
-    SE.chain(t => SE.map((ts: T[]) => [t].concat(ts))(nParser(parser))))
+    SE.flatMap(t => SE.map((ts: T[]) => [t].concat(ts))(nParser(parser))))
 
 describe('nParserAtLeast1 ', () => {
   const aParser: Parser<string> = charParser('a');

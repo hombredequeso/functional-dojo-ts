@@ -136,7 +136,7 @@ describe('what is an applicative', () => {
 
   })
 
-  test('You can do the same with chain, but it is ugly', () => {
+  test('You can do the same with flatMap, but it is ugly', () => {
 
     const makePoint = (x: number) => (y: number): Point => ({x, y});
 
@@ -152,7 +152,7 @@ describe('what is an applicative', () => {
     const optionX: Option<number> = O.of(1);
     const optionY: Option<number> = O.of(2);
 
-    const optionalPoint: Option<Point> = O.chain<number, Point>(x => {
+    const optionalPoint: Option<Point> = O.flatMap<number, Point>(x => {
       return O.map<number, Point>(y => {
         return {x,y}
       })(optionY)
@@ -164,7 +164,7 @@ describe('what is an applicative', () => {
 
     const optionalPoint2: Option<Point> = pipe(
       optionX,
-      O.chain(x=> pipe(
+      O.flatMap(x=> pipe(
         optionY,
         O.map(y => ({x,y}))
       ))

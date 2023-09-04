@@ -53,9 +53,9 @@ const customerInvoices: Map<string, Invoice[]> = new Map([
 ])
 
 
-describe('array flatmap, fp-ts edition - i.e. chain = flatMap', () => {
+describe('array flatmap, fp-ts edition - i.e. flatMap = flatMap', () => {
 
-  test('1. array chain', () => {
+  test('1. array flatMap', () => {
     const customerIds: CustomerId[] = ['customer2', 'customer3', 'customer4'];
 
     const getInvoices = (customerId: string): Invoice[] => customerInvoices.get(customerId) || [];
@@ -64,7 +64,7 @@ describe('array flatmap, fp-ts edition - i.e. chain = flatMap', () => {
     // This array of invoices will then be used to calculate the total for the customer's invoices.
     const allInvoices: Invoice[] = pipe(
       customerIds,
-      A.chain(getInvoices),
+      A.flatMap(getInvoices),
     );
 
     const allCustomerTotal: number = pipe(
@@ -75,7 +75,7 @@ describe('array flatmap, fp-ts edition - i.e. chain = flatMap', () => {
     expect(allCustomerTotal).toEqual(12);
   })
 
-  test('2. array chain', () => {
+  test('2. array flatMap', () => {
 
     const lines: string[] = [
       "Line number one",
@@ -100,7 +100,7 @@ describe('array flatmap, fp-ts edition - i.e. chain = flatMap', () => {
     const digits: number[] = pipe(
       lines,
       A.map(replaceNonLettersWith(' ')),
-      A.chain(getDigits)
+      A.flatMap(getDigits)
     );
 
     expect (digits).toEqual([1,2,1,3,4,5,6,7,8,9,0,1]);
@@ -163,10 +163,10 @@ const customerDetails: Map<CustomerId, Customer> = new Map<CustomerId, Customer>
   ]
 ]);
 
-describe('Option Chain', () => {
+describe('Option flatMap', () => {
 
 
-  test('3. Option Chain, using flow', () => {
+  test('3. Option flatMap, using flow', () => {
 
     const getCustomer = (customerId: CustomerId): Option<Customer> => O.fromNullable(customerDetails.get(customerId))
 
@@ -174,8 +174,8 @@ describe('Option Chain', () => {
     // CustomerId => Customer => ContactDetails => email (string)
     const getCustomerEmail : (customerId: CustomerId)=> Option<Email> = flow(
       getCustomer,
-      O.chain(customer => customer.contactDetails),
-      O.chain(contactDetails => contactDetails.email)
+      O.flatMap(customer => customer.contactDetails),
+      O.flatMap(contactDetails => contactDetails.email)
     );
 
     expect(getCustomerEmail('customer1')).toEqual(O.some('customer1@gmail.com'));
@@ -190,7 +190,7 @@ type Bonus = {
   discountPercent: number
 }
 
-describe('Task Chain', () => {
+describe('Task flatMap', () => {
   const dummyHash = (s: string):number => pipe( 
       s.split(''),
       A.reduce(0, (code, char) => (code + char.charCodeAt(0))%100)
@@ -214,7 +214,7 @@ describe('Task Chain', () => {
   }
 
 
-  test('4. Task chain', async () => {
+  test('4. Task flatMap', async () => {
     // Using the functions immediately above, get the discountPercentage starting from a customerId (where the customer is guaranteed to exist)
 
     const customerId = 'xyz';
@@ -222,7 +222,7 @@ describe('Task Chain', () => {
       customerId,
       getCustomerT,
       T.map(cust => cust.rating),
-      T.chain(getBonuses),
+      T.flatMap(getBonuses),
       T.map(bonus => bonus.discountPercent)
     )
 
@@ -232,7 +232,7 @@ describe('Task Chain', () => {
 
 type Error = string
 
-describe('Either Chain', () => {
+describe('Either flatMap', () => {
 
   const toNumberE = (s: string): Either<Error, number> => {
     if (s.length === 0)
@@ -253,7 +253,7 @@ describe('Either Chain', () => {
       E.fromNullableK('customer does not exist')((custId: string) => customerDetails.get(custId))(customerId);
 
 
-  test('5. Either chain', async () => {
+  test('5. Either flatMap', async () => {
     // the main sequence is: string -> number -> CustomerId -> Customer
     // ... but with errors along the way.
 
@@ -262,8 +262,8 @@ describe('Either Chain', () => {
     const customer: Either<Error, Customer> = pipe(
       userInput,
       toNumberE,
-      E.chain(toCustomerId),
-      E.chain(getCustomerE)
+      E.flatMap(toCustomerId),
+      E.flatMap(getCustomerE)
     );
 
     expect(customer).toEqual(E.right(
@@ -280,15 +280,15 @@ describe('Either Chain', () => {
   })
 
 
-  test('6. Either chain with flow', async () => {
+  test('6. Either flatMap with flow', async () => {
     // Slightly alter the previous test to construct a 'program'
     // that can be used over and over again.
 
 
     const getCustomer: (s: string)=>Either<Error, Customer> = flow(
       toNumberE,
-      E.chain(toCustomerId),
-      E.chain(getCustomerE)
+      E.flatMap(toCustomerId),
+      E.flatMap(getCustomerE)
     );
 
     expect(getCustomer('hello world')).toEqual(E.left('Error: hello world is not a number'));
@@ -301,7 +301,7 @@ describe('Either Chain', () => {
   })
 })
 
-describe('TaskEither Chain', () => {
+describe('TaskEither flatMap', () => {
 
   const getCustomerTE = (customerId: CustomerId): TaskEither<Error, Customer> => 
       TE.fromNullableK('customer does not exist')((custId: string) => customerDetails.get(custId))(customerId);
@@ -314,7 +314,7 @@ describe('TaskEither Chain', () => {
     return TE.of({discountPercent: 15})
   }
 
-  test('7. TaskEither chain', async () => {
+  test('7. TaskEither flatMap', async () => {
     // Use the above functions to calculate the customerBonus from 
 
     const customerId: CustomerId = 'customer1';
@@ -322,7 +322,7 @@ describe('TaskEither Chain', () => {
       customerId,
       getCustomerTE,
       TE.map(customer => customer.rating),
-      TE.chain(getBonusesTE)
+      TE.flatMap(getBonusesTE)
     );
 
     const executedCustomerBonusProgram = await customerBonus();
@@ -335,7 +335,7 @@ describe('TaskEither Chain', () => {
       customer99Id,
       getCustomerTE,
       TE.map(customer => customer.rating),
-      TE.chain(getBonusesTE)
+      TE.flatMap(getBonusesTE)
     );
 
     const executedCustomerBonusProgram99 = await customerBonus99();

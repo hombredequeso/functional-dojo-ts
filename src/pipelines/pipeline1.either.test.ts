@@ -51,7 +51,7 @@ const handleCommand = (cmd: IncreaseCommand): Either<Error, CommandResult> => {
 
 const executeRequest = (request: RequestIn): Either<Error, CommandResult> => {
   const cmd: Either<Error, IncreaseCommand> = toCommand(request);
-  const handleResult: Either<Error, CommandResult> = E.chain(handleCommand)(cmd);
+  const handleResult: Either<Error, CommandResult> = E.flatMap(handleCommand)(cmd);
   return handleResult;
 }
 

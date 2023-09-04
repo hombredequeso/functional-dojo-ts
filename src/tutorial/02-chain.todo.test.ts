@@ -56,10 +56,10 @@ const customerInvoices: Map<string, Invoice[]> = new Map([
 ])
 
 
-describe('array flatmap, fp-ts edition - i.e. chain = flatMap', () => {
+describe('array flatmap, fp-ts edition - i.e. flatMap = flatMap', () => {
   
 
-  test('1. array chain', () => {
+  test('1. array flatMap', () => {
 
     const getInvoices = (customerId: string): Invoice[] => customerInvoices.get(customerId) || [];
 
@@ -77,7 +77,7 @@ describe('array flatmap, fp-ts edition - i.e. chain = flatMap', () => {
   })
 
 
-  test('2. array chain', () => {
+  test('2. array flatMap', () => {
 
     const lines: string[] = [
       "Line number one",
@@ -161,10 +161,10 @@ const customerDetails: Map<CustomerId, Customer> = new Map<CustomerId, Customer>
   ]
 ]);
 
-describe('Option Chain', () => {
+describe('Option flatMap', () => {
 
 
-  test('3. Option Chain, using flow', () => {
+  test('3. Option flatMap, using flow', () => {
 
     const getCustomer = (customerId: CustomerId): Option<Customer> => O.fromNullable(customerDetails.get(customerId))
 
@@ -185,7 +185,7 @@ type Bonus = {
   discountPercent: number
 }
 
-describe('Task Chain', () => {
+describe('Task flatMap', () => {
   const dummyHash = (s: string):number => pipe( 
       s.split(''),
       A.reduce(0, (code, char) => (code + char.charCodeAt(0))%100)
@@ -208,7 +208,7 @@ describe('Task Chain', () => {
     return T.of({discountPercent: 15})
   }
 
-  test('4. Task chain', async () => {
+  test('4. Task flatMap', async () => {
     // Using the functions immediately above, get the discountPercentage starting from a customerId (where the customer is guaranteed to exist)
 
     const customerId = 'xyz';
@@ -220,7 +220,7 @@ describe('Task Chain', () => {
 
 type Error = string
 
-describe('Either Chain', () => {
+describe('Either flatMap', () => {
 
   const toNumberE = (s: string): Either<Error, number> => {
     if (s.length === 0)
@@ -241,7 +241,7 @@ describe('Either Chain', () => {
       E.fromNullableK('customer does not exist')((custId: string) => customerDetails.get(custId))(customerId);
 
 
-  test('5. Either chain', async () => {
+  test('5. Either flatMap', async () => {
     // Based on some userInput that represents the numeric part of a customerId, get the customer.
     // the main sequence is: string -> number -> CustomerId -> Customer
     // ... but with errors along the way.
@@ -263,7 +263,7 @@ describe('Either Chain', () => {
   })
 
 
-  test('6. Either chain with flow', async () => {
+  test('6. Either flatMap with flow', async () => {
     // Slightly alter the previous test to construct a 'program'
     // that can be used over and over again.
 
@@ -279,7 +279,7 @@ describe('Either Chain', () => {
   })
 })
 
-describe('TaskEither Chain', () => {
+describe('TaskEither flatMap', () => {
 
   const getCustomerTE = (customerId: CustomerId): TaskEither<Error, Customer> => 
       TE.fromNullableK('customer does not exist')((custId: string) => customerDetails.get(custId))(customerId);
@@ -292,7 +292,7 @@ describe('TaskEither Chain', () => {
     return TE.of({discountPercent: 15})
   }
 
-  test('7. TaskEither chain', async () => {
+  test('7. TaskEither flatMap', async () => {
     // Use the above functions to calculate the customerBonus starting from the customerId
 
     const customerId: CustomerId = 'customer1';

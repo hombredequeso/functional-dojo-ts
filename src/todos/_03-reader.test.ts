@@ -39,7 +39,7 @@ describe('reader', () => {
     pipe(
       getCustomer(id),
       T.map(createInvoiceMessage(amount)),
-      T.chain(invoiceCustomer)
+      T.flatMap(invoiceCustomer)
     );
 
   test('domain logic only', async () => {
@@ -68,7 +68,7 @@ describe('reader', () => {
     pipe(
       getCustomer2(config.customerapiBaseUrl)(id),
       T.map(createInvoiceMessage(amount)),
-      T.chain(invoiceCustomer2(config.invoiceApiBaseUrl))
+      T.flatMap(invoiceCustomer2(config.invoiceApiBaseUrl))
     );
 
 
@@ -85,7 +85,7 @@ describe('reader', () => {
     pipe(
       getCustomer3(id),
       RT.map(createInvoiceMessage(amount)),
-      RT.chain(invoiceCustomer3)
+      RT.flatMap(invoiceCustomer3)
     );
 
     // Now compare:
@@ -115,8 +115,8 @@ describe('reader', () => {
   const invoiceCustomerPipeline4 = (id: CustomerId, amount: number, config: Config): Reader<Config, Task<Invoice>> => 
     pipe(
       getCustomer3(id),
-      RT.chain(createInvoiceMessageRT(amount)),
-      RT.chain(invoiceCustomer3)
+      RT.flatMap(createInvoiceMessageRT(amount)),
+      RT.flatMap(invoiceCustomer3)
     );
 
   // Reader is analogically, dependency injection for functional programming.
