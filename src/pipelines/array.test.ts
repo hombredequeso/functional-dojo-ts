@@ -1,4 +1,4 @@
-import { JustOne } from 'justone';
+import { JustOne } from './justone';
 
 
 import * as A from 'fp-ts/lib/Array'

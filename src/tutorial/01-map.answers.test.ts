@@ -26,8 +26,8 @@ describe('map exercises', () => {
 
     // Implement this function however you like, but including A.map somewhere
 
-    // Typescript struggles with the types here:
-    const lengths = A.map(n => n.length)(customerNames);
+    // Typescript struggles with the types if you do this (commented out so build works, uncomment it to see the problem):
+    // const lengths = A.map(n => n.length)(customerNames);
 
     // but you can help it in one of two ways:
     const lengthsB = A.map((n: string) => n.length)(customerNames);
@@ -39,8 +39,8 @@ describe('map exercises', () => {
       A.map(n => n.length)
     )
 
-    expect(lengths).toEqual([4,6,5]);
-    expect(lengths2).toEqual(lengths);
+    expect(lengthsB).toEqual([4,6,5]);
+    expect(lengths2).toEqual(lengthsB);
   })
 
   // Looking at various ways of composing functions:

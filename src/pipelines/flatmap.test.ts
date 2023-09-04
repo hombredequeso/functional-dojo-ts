@@ -1,4 +1,4 @@
-import { JustOne } from "justone";
+import { JustOne } from "./justone";
 
 
 import { Task } from 'fp-ts/lib/Task';
