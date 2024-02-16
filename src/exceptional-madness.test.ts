@@ -65,11 +65,11 @@ describe('to except or not to except', () => {
     expect(successfullyCreatedCustomer).toStrictEqual(true)
   })
 
-  // And what happens at a later time, if someone see the createCustomer function
+  // And what happens at a later time, if someone sees the createCustomer function
   // and uses it somewhere else. 
   // If they use it on the basis of it's signature, it says:
   //    const createCustomer = (s: string): Customer => {
-  // so it is likely they will use it on the basis of that signature.
+  // so (unless they read the entire function) it is likely they will use it as the signature advertises.
   // Everything will be ok, until it runs with a non-numeric (s: string) value, and then
   // an exception will happen - maybe unexpectedly in production.
 
@@ -94,6 +94,7 @@ describe('to except or not to except', () => {
   // because the type system tells you as much.
   // The signature of the function declares all possible outcomes.
   // Exceptions, if they were to occur, are restricted to truly exceptional conditions: e.g. OutOfMemory.
-  // Taking a string, parsing it, and discovering it isn't a number is not exceptional, it is a perfectly normal, expected outcome.
+  // Taking a string, parsing it, and discovering it isn't a number is not exceptional, 
+  // it is a perfectly normal, expected outcome.
   
 })

@@ -248,8 +248,8 @@ describe('map exercises', () => {
   // For this test, a 'double context' is involved.
   // At some point, you should end up with an Option inside a Task.
   // fp-ts provides functions for some combinations of 'double wrapped contexts',
-  // and Task<Option<T>> is one of them. Effectively:
-  // Task<Option<T> is just a type alias for TaskOption<T>
+  // and Task<Option<T>> is one of them.
+  // Task<Option<T> is the same as TaskOption<T>
   test('13. Task<Option', async () => {
     const userId = 123;
 

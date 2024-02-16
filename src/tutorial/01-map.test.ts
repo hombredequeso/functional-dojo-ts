@@ -26,6 +26,10 @@ import * as R from 'fp-ts/lib/Reader';
 import * as N from 'fp-ts/lib/number'
 import * as Str from 'fp-ts/lib/string'
 
+
+import { TaskEither } from 'fp-ts/lib/TaskEither';
+import * as TE from 'fp-ts/lib/TaskEither';
+
 describe('javascript array', () => {
   test('array map', () => {
     const ints: number[] = [1,2,3];
@@ -80,6 +84,30 @@ describe('map with fp-ts', () => {
     // type NullableT<T> = T | null;
     // The benefit it brings is the 'map' function means you don't end up writing 
     //   (if (x === null) then ... else ...) all over the place.
+
+    // O.map(func)(option)
+    // can be thought of as a piece of code that replaces this:
+  test('option map the long way', () => {
+    const numberOrNull : number|null = 1;
+    const stringOrNull : string|null =
+      (numberOrNull === null) ? null : numberOrNull.toString();
+
+    // or more commonly (for those alergic to the ternary operator)
+
+    const toStr = (numberOrNull: number|null) => {
+      if (numberOrNull === null) {
+        return null
+      } else {
+        return numberOrNull.toString();
+      }
+    }
+
+    const stringOrNull2 = toStr(numberOrNull);
+
+    // Equivalent to:
+    const optionalNumber: Option<number> = O.some(1);
+    const optionalString: Option<string> = O.map((x: number) => x.toString())(optionalNumber)
+  })
 
 
   test('Set: another type of collection, unordered, only one of each element', () => {
@@ -237,6 +265,32 @@ describe('map with fp-ts', () => {
   //  result({context: 'prod'})
   // So that means, as with IO, you can map over a function.
 
+  // It is also possible to have what you could think of a a double-wrapper,
+  // or a double-context. A common example is a Task<Either<Error, T>>
+  // meaning: a Task, where the value is Either an Error, or a T.
+  // This is so common, there is an alias for Task<Either<Error, T>>, TaskEither<Error, T>
+  // And given that alias, you might be able to imagine what that means for map.
+  // Yep, if you have a TaskEither and map over it, then if the insider value is not an Error,
+  // you will get a mapped value in the Task.
+  type Error = string;
+
+  test('TaskEither map', async () => {
+    const a: TaskEither<Error, number> = TE.of(1);
+    const numToString = (x: number): string => x.toString();
+
+    const result: TaskEither<Error, string> = TE.map(numToString)(a)
+
+    const executedResult: Either<Error, string> = await result();
+
+    expect(executedResult).toEqual(E.right('1'));
+
+    // Or if there was an error:
+    const b: TaskEither<Error, number> = TE.left('someError')
+    const result2: TaskEither<Error, string> = TE.map(numToString)(b);
+    const executedResult2: Either<Error, string> = await result2();
+    expect(executedResult2).toEqual(E.left('someError'))
+  })
+
   // So where'd we get to?
   // the operation of map is something that can be done to:
   //    * data structures
@@ -248,4 +302,5 @@ describe('map with fp-ts', () => {
   //    map is an structure/wrapper/context preserving operation, that transforms
   //      the values of the structure/wrapper/context
   //      by producing a new value(s) inside the same structure/wrapper/context
+
 })

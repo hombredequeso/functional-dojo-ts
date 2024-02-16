@@ -9,8 +9,13 @@ import * as O from 'fp-ts/lib/Option';
 import { Either } from 'fp-ts/lib/Either';
 import * as E from 'fp-ts/lib/Either';
 
+import { Reader } from 'fp-ts/lib/Reader';
+import * as R from 'fp-ts/lib/Reader';
+
 
 import { pipe } from 'fp-ts/lib/function';
+import { TaskEither } from 'fp-ts/lib/TaskEither';
+import * as TE from 'fp-ts/lib/TaskEither'
 
 
 // Prologue. Reminder of the broader context.
@@ -306,6 +311,62 @@ describe('fp-ts flatMap (flatmap/bind)', () => {
       E.flatMap(toCustomerIdE)
     )
     expect(customerId3E).toEqual(E.left('Not a number'))
+  })
+
+  test('TaskEither flatMap', () => {
+    // So, what if we combine what happened with Task, but now consider that errors could happen along the way.
+    // For this example, the first api we hit takes a string, and returns a customer number or error.
+    // The second api takes the customer number (if there is one) and returns data about them if they have
+    // been completely setup.
+
+    type Error = string;
+    type CustomerData = {
+      customerId: number,
+      description: string,
+      setupDateEpoch: number
+    }
+
+    // and let's pretend that the customerStr is also coming to us from a previous async Task that could have errored.
+    const customerStr: TaskEither<Error, string> = TE.right("Hombre de Queso Inc.");
+    const getCustomerId = (customerStr: string): TaskEither<Error, number> => TE.right(1);
+    const getCustomerInfo = (customerId: number): TaskEither<Error, CustomerData> => TE.right({
+      customerId: 1,
+      description: 'abc',
+      setupDateEpoch: Date.now()
+    });
+
+    const customerData: TaskEither<Error, CustomerData> = pipe(
+      customerStr,
+      TE.flatMap(getCustomerId),
+      TE.flatMap(getCustomerInfo)
+    );
+
+    const customerDataExecuted:  Either<Error, CustomerData>= customerData()
+
+
+
+  })
+
+  test('reader flatmap', () => {
+
+    interface Config {
+      context: string
+    }
+
+    const a: Reader<Config, number> = (config: Config) => 1;
+    const numToString = (x: number): string => x.toString();
+    const numToReaderString = (x: number): Reader<Config, string> => (config: Config) => `${x}: in context ${config.context}`;
+    // Notice here, our function returns a Reader, and the value getting provided is also a Reader.
+    const result: Reader<Config, string> = R.flatMap(numToReaderString)(a);
+
+    const executedResult: string = result({context: 'prod'});
+    expect(executedResult).toEqual('1: in context prod');
+
+
+    // Which if reader wasn't there would be more like:
+    const a2: number = 1;
+    const result2: string = numToString(a2);
+    expect(result2).toEqual('1')
   })
 })
 
