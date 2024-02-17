@@ -41,7 +41,7 @@ describe('javascript array', () => {
   })
 
   // Imagine an array that can only have one (and only one) element in it.
-  // (this is a pointless construct, soley for learning purposes)
+  // (this is mostly a pointless construct, soley for learning purposes)
   // So, instead of Array<number>, we have JustOn<number>
   // You don't need to look at the implementation of it, but can imagine what the result will be:
 
@@ -92,7 +92,7 @@ describe('map with fp-ts', () => {
     const stringOrNull : string|null =
       (numberOrNull === null) ? null : numberOrNull.toString();
 
-    // or more commonly (for those alergic to the ternary operator)
+    // or more commonly (for those allergic to the ternary operator)
 
     const toStr = (numberOrNull: number|null) => {
       if (numberOrNull === null) {

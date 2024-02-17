@@ -39,6 +39,14 @@ describe('typescript array and syntactic sugar', () => {
     expect(result).toStrictEqual([2, 3, 4]);
     
     // in other words it has done this: A.map(add1)(ints)
+    // All pipe does is take the result of the line before,
+    // and make it an argument on the end of the next line
+
+    // const result: number[] = pipe(
+    //   ints*,                                
+    //   A.map(add1)(ints*) // it is as if ints* somehow made it's way down here
+    //                         (if we read the line on its own)
+    // );
   });
 
 
@@ -48,7 +56,6 @@ describe('typescript array and syntactic sugar', () => {
   test('map using fp-ts and pipe with more maps', () => {
     const add1 = (x: number) => x + 1;
     const turnIntoCustomerId = (x: number) => `customer:${x}`;
-
 
     const ints: number[] = [1, 2, 3];
 
