@@ -1,3 +1,14 @@
+// Notes
+// A comparison of fp, oo, and a little bit of procedural approaches to the same problem.
+//
+// A few of the points to be made:
+// * fp separates the data from the functions. There is no mutation of data.
+// * oo encapsulates the data as state, then provides methods to mutate it.
+//   oo in practice tends to break encapsulation, making the state of objects available to anyone with a reference to the object.
+// * the file mentions line count for alternative implementations. Why one approach may or may not be better than the another really has little to do with line count. That said, _what_ the extra lines in the oo solution are doing (managing and then undoing encapsulation) is helpful to reflect on.
+// * the comparison is only done using unit tests. However, the exact same questions that arise in unit testing arise when working with actual code.
+//   With respect to oo, that includes: when a method is called, what might get changed? 
+
 
 enum OrderState {
     Submitted,

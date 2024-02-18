@@ -54,10 +54,7 @@ A brief look at why the alternative flow-of-control introduced by exceptions is 
 
 `fp-oo.test.ts`
 
-A comparison of fp and oo approaches to the same problem.
-A couple of pointers here:
-* the file mentions line count for alternative implementations. Why one approach may or may not be better than the another really has little to do with line count. That said, _what_ the extra lines in the oo solution are doing (managing and then undoing encapsulation) is helpful to reflect on.
-* There's also the beginnings of reflections on imperative at the bottom.
+A comparison of fp and oo approaches to the same problem, with a little bit of procedural thrown in.
 
 `functor-laws.test.ts`
 
