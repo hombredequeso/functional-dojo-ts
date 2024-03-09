@@ -313,7 +313,7 @@ describe('fp-ts flatMap (flatmap/bind)', () => {
     expect(customerId3E).toEqual(E.left('Not a number'))
   })
 
-  test('TaskEither flatMap', () => {
+  test('TaskEither flatMap', async () => {
     // So, what if we combine what happened with Task, but now consider that errors could happen along the way.
     // For this example, the first api we hit takes a string, and returns a customer number or error.
     // The second api takes the customer number (if there is one) and returns data about them if they have
@@ -341,10 +341,7 @@ describe('fp-ts flatMap (flatmap/bind)', () => {
       TE.flatMap(getCustomerInfo)
     );
 
-    const customerDataExecuted:  Either<Error, CustomerData>= customerData()
-
-
-
+    const customerDataExecuted:  Either<Error, CustomerData>= await customerData();
   })
 
   test('reader flatmap', () => {
