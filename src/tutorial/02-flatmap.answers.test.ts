@@ -182,6 +182,20 @@ describe('Option flatMap', () => {
     expect(getCustomerEmail('customer2')).toEqual(O.none);
     expect(getCustomerEmail('customer3')).toEqual(O.none);
     expect(getCustomerEmail('customer4')).toEqual(O.none);
+
+    // Note how 'flow' relates to the more familiar 'pipe':
+    // The syntax for the declaration of getCustomerEmailP is slightly different from getCustomerEmail,
+    // but the type of the two functions is identical.
+    // One way to think about it is that because the first argument in pipe typically provides the
+    // starting value, it is possible to change the pipe into a flow and take away that first value,
+    // but provide the value as the first parameter of the function.
+    const getCustomerEmailP = (customerId: CustomerId): Option<Email> => pipe(
+      customerId,
+      getCustomer,
+      O.flatMap(customer => customer.contactDetails),
+      O.flatMap(contactDetails => contactDetails.email)
+    );
+
   })
 
 })
