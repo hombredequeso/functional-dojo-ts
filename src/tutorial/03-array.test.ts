@@ -189,7 +189,7 @@ describe('Compactible: for data structures that can be filtered/compacted', () =
 })
 
 // DANGER DANGER
-// The function compact, is earily similar to sequenceArray. But note, it is something completely different.
+// The function compact, is eerily similar to sequenceArray. But note, it is something completely different.
 describe('sequence: similarities to foldable - it iterates over something, but the thing in it themselves have a wrapper/structure/context: T1<T2<T>>', () => {
   test('number 1: sequence, in which the data makes it look so similar that it can be confused', () => {
     const l: Array<Option<number>> = [O.some(1), O.some(2), O.some(3)];
