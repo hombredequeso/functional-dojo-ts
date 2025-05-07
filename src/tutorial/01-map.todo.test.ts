@@ -24,9 +24,9 @@ describe('map exercises', () => {
     const customerNames = ['Duke', 'Bernie', 'Micky' ];
 
     // Implement this function however you like, but including A.map somewhere
-    const lengths = todo('#1');
+    const stringLengths = todo('#1');
 
-    expect(lengths).toEqual([4,6,5]);
+    expect(stringLengths).toEqual([4,6,5]);
   })
 
   // Looking at various ways of composing functions:
@@ -210,11 +210,12 @@ describe('map exercises', () => {
   }
   
   // In a real program this might be a call to an api or a Database
-  const getUserData = (id: number): Task<UserData> => T.of<UserData>({
-    id,
-    name: "SomeName",
-    age: '21'
-  });
+  const getUserData = (id: number): Task<UserData> => 
+    T.of<UserData>({
+      id,
+      name: "SomeName",
+      age: '21'
+    });
 
   const toPrintableUser = (user: UserData): string => 
     `User: id=${user.id}; name=${user.name}`;
@@ -238,8 +239,9 @@ describe('map exercises', () => {
     const executionResult = await printableUserT();
 
     expect(executionResult).toEqual('User: id=123; name=SomeName')
-  // One consequence to this is that invocation of Tasks/Promises sits
-  // at the boundaries of a programs.
+
+    // One consequence to this is that invocation of Tasks/Promises sits
+    // at the boundaries of a programs.
   })
 
   const printAge = (age: number): string => `Age: ${age}`

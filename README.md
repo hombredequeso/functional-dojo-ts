@@ -24,7 +24,7 @@ cd functional-dojo-ts
 yarn
 ```
 
-I run thorugh the tutorial in numerical sequence, 00, 01, 02, ...
+I run through the tutorial in numerical sequence, 00, 01, 02, ...
 Some of the sections have accompanying exercises (with .todo's and .answers)
 
 Taking 01-map as an example:

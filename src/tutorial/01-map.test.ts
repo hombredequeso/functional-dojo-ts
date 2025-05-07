@@ -1,4 +1,5 @@
-import { JustOne } from '../pipelines/justone';
+import { JustOne } from './justone';
+import * as JO from './justone';
 
 import { Tree } from 'fp-ts/lib/Tree';
 import * as Tr from 'fp-ts/lib/Tree';
@@ -30,54 +31,70 @@ import * as Str from 'fp-ts/lib/string'
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 import * as TE from 'fp-ts/lib/TaskEither';
 
-describe('javascript array', () => {
-  test('array map', () => {
-    const ints: number[] = [1,2,3];
-    const add1 = (x: number) => x + 1;
+import { pipe } from 'fp-ts/lib/function';
 
-    const newInts = ints.map(add1);
+describe('array map', () => {
+  test('javascript array map', () => {
 
-    expect(newInts).toEqual([2,3,4]);
+    const numToString = (x: number): string => x.toString();
+
+    const ints: Array<number> = [1,2,3];
+    const result: Array<string> = ints.map(numToString);
+
+    const expected: Array<string> = ['1', '2', '3'];
+    expect(result).toEqual(expected);
   })
+
+
+  test('fp-ts array map', () => {
+
+    const numToString = (x: number): string => x.toString();
+
+    const a: Array<number> = [1,2,3]
+    const result: Array<string> = A.map(numToString)(a);
+
+    const expected: Array<string> = ['1', '2', '3'];
+    expect(result).toEqual(expected);
+  })
+
+  // But, we can "use" the operation of map on other things.
+  // All map does is look at the values inside a data structure,
+  // and produce a data structure that is exactly the same, but with all the values having had
+  // the function applied to them.
 
   // Imagine an array that can only have one (and only one) element in it.
   // (this is mostly a pointless construct, soley for learning purposes)
   // So, instead of Array<number>, we have JustOn<number>
   // You don't need to look at the implementation of it, but can imagine what the result will be:
 
+
   test('justone', ()=> {
-    const oneInt: JustOne<number> = new JustOne<number>(1);
-    const add1 = (x: number) => x + 1;
 
-    const newOneInt = oneInt.map(add1);
+    const numToString = (x: number): string => x.toString();
 
-    expect(newOneInt).toEqual(new JustOne<number>(2))
+    const int: JustOne<number> =  JO.justOne(1);    // just like a single element array: [1]
+    const result: JustOne<number> = JO.map(numToString)(int);  // just like a single element array: ['1']
+
+    const expected: JustOne<number> = JO.justOne('1');
+    expect(result).toEqual(expected);
   })
 })
 
-
-describe('map with fp-ts', () => {
-  test('array', () => {
-    const a: number[] = [1,2,3]
-    const add1 = (x: number) => x + 1;
-    const result: number[] = A.map(add1)(a);
-
-    expect(result).toEqual([2,3,4]);
-  })
-
+describe('map with even more data structures beyond Array, JustOne, ...', () => {
 
   test('Option map - option is like an array, but with only 1 or 0 elements allowed', () => {
     const numToString = (x: number): string => x.toString();
 
-    // If the 'array' had one element in it...
-    const a: Option<number> = O.some(1);
-    const result: Option<string> = O.map(numToString)(a)
+    const a: Option<number> = O.some(1);                  // like [1]
+    const result: Option<string> = O.map(numToString)(a)  // like ['1']
+
+
+    const expected: Option<string> = O.some('1');
     expect(result).toEqual(O.some('1'))
 
-
     // If the 'array' had no elements in it...
-    const b: Option<number> = O.none;
-    const resultb: Option<string> = O.map(numToString)(b)
+    const b: Option<number> = O.none;                       // like []
+    const resultb: Option<string> = O.map(numToString)(b)   // like []
     expect(resultb).toEqual(O.none)
   })
     // Option<T> can be thought of a data structure similar to something like:
@@ -87,10 +104,14 @@ describe('map with fp-ts', () => {
 
     // O.map(func)(option)
     // can be thought of as a piece of code that replaces this:
+  
   test('option map the long way', () => {
+
     const numberOrNull : number|null = 1;
-    const stringOrNull : string|null =
-      (numberOrNull === null) ? null : numberOrNull.toString();
+
+    const toStr1 = (numOrNull: number|null) =>
+      (numOrNull === null) ? null : numOrNull.toString();
+    const stringOrNull: string|null = toStr1(numberOrNull);
 
     // or more commonly (for those allergic to the ternary operator)
 
@@ -101,12 +122,17 @@ describe('map with fp-ts', () => {
         return numberOrNull.toString();
       }
     }
-
     const stringOrNull2 = toStr(numberOrNull);
 
     // Equivalent to:
     const optionalNumber: Option<number> = O.some(1);
     const optionalString: Option<string> = O.map((x: number) => x.toString())(optionalNumber)
+
+    // As a side note, observe how turning x.ToString() into a function taking an arg cleans things up:
+    const toString_ = (a: unknown) => a.toString();
+    const optionalString2: Option<string> = O.map(toString_)(optionalNumber)
+    // or using pipe...
+    const optionalString3: Option<string> = pipe(optionalNumber, O.map(toString_));
   })
 
 
@@ -128,11 +154,6 @@ describe('map with fp-ts', () => {
   test('Tree: another data structure', () => {
     const numToString = (x: number): string => x.toString();
 
-    // Why N.Eq everywhere?? fp-ts implementation of Set functions generally require
-    // us to provide a mechanism to determine whether elements in the array are equal,
-    // so it can explicitly maintain what 'one of each element' means.
-
-
     // Make a tree like this:
     //        1
     //        |
@@ -140,17 +161,14 @@ describe('map with fp-ts', () => {
     //    |           |
     //    2           3
 
-    const two: Tree<number> = Tr.of(2);
-    const three: Tree<number> = Tr.of(3);
-    const a = Tr.make(1, [two, three]);
-    const b = Tr.map(numToString)(a);
+    // Tr.make is a helper function to make tree structures.
+    const a: Tree<number> = Tr.make(1, [Tr.make(2), Tr.make(3)]);
+    const b: Tree<string> = Tr.map(numToString)(a);
 
-    // Can't do this!!!! (drawTree requires Tree<string> )
-    // console.log(Tr.drawTree(a));
-
-    // so...
     const expected = Tr.make('1', [Tr.of('2'), Tr.of('3')]);
     expect(b).toEqual(expected);
+
+    // draw it to the console for fun...
     console.log(Tr.drawTree(b));
   })
 
@@ -162,7 +180,7 @@ describe('map with fp-ts', () => {
   //    * the 'structure' includes the number and relationship between elements.
   //        i.e. if the array had 3 elements, so will the mapped one.
   //              if the tree was a binary tree with 2 elements, so will the mapped one.
-  //    * the VALUES of the elements in the container/data structure are changed.
+  //    * the VALUES of the elements in the container/data structure are transformed according to the provided function.
 
 
   // But wait, there's more:
@@ -182,16 +200,19 @@ describe('map with fp-ts', () => {
   // In other words, the parallel with earlier data structures is that
   // in all the following, there is a wrapper with element(s) of T in it.
   // Array<T>, Task<T>, Option<T>, Either<Error, T> 
-  // So don't think of the Error as anything more than part of the wrapper
+  // So don't think of the Error as anything more than part of the wrapper.
+  // It's just that now, the wrapper can tell you _why_ there is no value.
   // 
   // If you are still stuck, think of "Either<Error" as being like Option,
   // and if there is an error, then it is like None. And if there is a right/success, it is Some
 
   // Parallelling Option<T>, Either<E, T> can be though of as being similar to:
   // type TOrError<T, E> = T | E
-  // with the benefit of a map function when you want to ignore errors.
+  // with the benefit of a map function when you want to simply propogate the error.
+  
 
-  // Now turns out that map can be used for other things, that are not data structures.
+  // But wait, there's still more...
+  // It turns out that map can be used for other things, that are not data structures.
 
   // NOTE: Task is something in fp-ts. To get started, think of it as a Strictly typed Promise 
   //      (it isn't strictly a Promise, but we'll get to that another time)
@@ -219,9 +240,13 @@ describe('map with fp-ts', () => {
     // A couple of analogies for what an IO is are:
     // * very similar to a Task<T>. For this exercise, you could mentally subsitute IO<> with Task<>
     // * A function. IO<T> is a function that gives you a T value. The function gets executed right at the end.
-    //   So in this exercise IO<UnitTime> is a function, that when executed gives us a UnixTime. Only thing is,
-    //   we don't want to preserve the IO<> context until the very end, so to get access to the UnixTime we have to map it
-    //   to get at the value inside the IO<> context.
+    //   So in this exercise IO<UnitTime> is a function, that when executed gives us a UnixTime. 
+    //   The IO context wrapper is preserved until the end, and then we finally 'execute', using "()";
+    //
+    //   IO indicates that we are reaching outside of the purely functional world and accessing something,
+    //   in this case, the system clock. Since the system clock is mutable (as time tends to move forwards),
+    //   it can't be purely functional.
+    
     const nowIO: IO<UnixTime> = Io.of(now);
     const numToString = (x: number): string => x.toString();
 
