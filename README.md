@@ -46,7 +46,7 @@ yarn test ./src/tutorial/01-map.todo.test.ts
 yarn test ./src/tutorial/01-map.answers.test.ts
 ```
 
-# Src/Notes
+# src/Notes
 
 `exceptional-madness.test.ts`
 
