@@ -73,9 +73,9 @@ describe('array map', () => {
     const numToString = (x: number): string => x.toString();
 
     const int: JustOne<number> =  JO.justOne(1);    // just like a single element array: [1]
-    const result: JustOne<number> = JO.map(numToString)(int);  // just like a single element array: ['1']
+    const result: JustOne<string> = JO.map(numToString)(int);  // just like a single element array: ['1']
 
-    const expected: JustOne<number> = JO.justOne('1');
+    const expected: JustOne<string> = JO.justOne('1');
     expect(result).toEqual(expected);
   })
 })
@@ -129,7 +129,7 @@ describe('map with even more data structures beyond Array, JustOne, ...', () => 
     const optionalString: Option<string> = O.map((x: number) => x.toString())(optionalNumber)
 
     // As a side note, observe how turning x.ToString() into a function taking an arg cleans things up:
-    const toString_ = (a: unknown) => a.toString();
+    const toString_ = (a: any) => a.toString();
     const optionalString2: Option<string> = O.map(toString_)(optionalNumber)
     // or using pipe...
     const optionalString3: Option<string> = pipe(optionalNumber, O.map(toString_));
