@@ -91,7 +91,7 @@ describe('fp-ts flatMap (flatmap/bind)', () => {
   });
 
   // Things to note:
-  // * the function getting mapped has the form: a => T[b] (e.g. getWordLengths is: string => number[])
+  // * the function getting mapped has the form: a => T[b] (e.g. getWordLengths is: string => Array<number>)
   // * so the function getting mapped results in a structure/wrapper/context that is the same as the one we are already in.
   // * so what is flatmap doing? It maps the value, but it 'knows' something about managing the structure/wrapper/context
   //    that the value comes back in, and can 'undo' a double structure/wrapper/context.
@@ -108,9 +108,9 @@ describe('fp-ts flatMap (flatmap/bind)', () => {
   // const toCustomerId = (n: number): Option<string> => (n.toString().length === 4 ? O.some(`customer:${n}`): O.none)
   const toCustomerId = (n: number): Option<string> =>
     pipe(
-      n,
-      O.fromPredicate((x) => x.toString().length === 4),
-      O.map((n) => `customer:${n}`)
+      n,                                                  // string
+      O.fromPredicate((x) => x.toString().length === 4),  // Option<string>
+      O.map((n) => `customer:${n}`)                       // Option<string>
     );
 
   test('option flatMap', () => {
@@ -122,8 +122,8 @@ describe('fp-ts flatMap (flatmap/bind)', () => {
     // Oh ugly double wrapper...
     expect(customerIdOptionOption).toEqual(O.some(O.some('customer:1234')));
 
-    const customerIdO: Option<string> = O.flatMap(toCustomerId)(parsedA);
     // vs. thing of beauty:
+    const customerIdO: Option<string> = O.flatMap(toCustomerId)(parsedA);
     expect(customerIdO).toEqual(O.some('customer:1234'));
 
     // Compare the structure.
