@@ -161,3 +161,69 @@ describe('is referentially transparent: Immutability edition', () => {
   //   and reduced to it's simplest possible dependencies, a string for the id.
 
 })
+
+import { Task } from 'fp-ts/lib/Task';
+import * as T from 'fp-ts/lib/Task';
+import * as A from 'fp-ts/lib/Array'
+
+describe('task vs promise referential transparency', () => {
+  test('Task is referentially transparent pt 1', async () => {
+    let x=1
+    const task: Task<number> = ()=> Promise.resolve(x++);
+
+    const a = task;
+    const b = task;
+    const m: Array<Task<number>> = [a,b];
+    const m2: Task<Array<number>> = A.sequence(T.ApplicativePar)(m)
+
+    const m2Executed = await m2();
+
+    console.log(m2Executed);
+    expect(m2Executed).toStrictEqual([2,1]);
+  })
+  test('Task is referentially transparent pt 2', async () => {
+    let x=1
+
+    const a = ()=> Promise.resolve(x++);
+    const b = ()=> Promise.resolve(x++);
+    const m: Array<Task<number>> = [a,b];
+    const m2: Task<Array<number>> = A.sequence(T.ApplicativePar)(m)
+
+    const m2Executed = await m2();
+    // Note, this result is the same as the previous test.
+    // We are treatinging : 
+    // ()=> Promise.resolve(x++)
+    // as being referentially transparent.
+    expect(m2Executed).toStrictEqual([2,1]);
+  })
+
+
+  test('Promise is NOT referentially transparent pt 1', async () => {
+    let x=1
+    const task: Promise<number> = Promise.resolve(x++);
+
+    const a = task;
+    const b = task;
+    const m: Promise<Array<number>> = Promise.all([a,b]);
+
+    const mExecuted = await m;
+
+    expect(mExecuted).toStrictEqual([1,1]);
+  })
+
+  test('Promise is NOT referentially transparent pt 2', async () => {
+    let x=1
+
+    const a = Promise.resolve(x++);
+    const b =  Promise.resolve(x++);
+    const m: Promise<Array<number>> = Promise.all([a,b]);
+
+    const mExecuted = await m;
+
+    // Note that this result is different from the one above.
+    // We attempted to treat Promise.resolve(x++) as referentially transparent, but it isn't.
+    // Because when you write Promise.resolve... , javascript immediately creates a new promise
+    // and starts executing it.
+    expect(mExecuted).toStrictEqual([1,2]);
+  })
+})
